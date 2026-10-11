@@ -13,6 +13,7 @@
     --navy: #061a52;
     --blue: #1456f0;
     --sky: #8fc0ff;
+    --pale: #c9dcff;
     --ice: #eaf3ff;
     --white: #ffffff;
   }
@@ -85,7 +86,7 @@
   /* ---------- work: blue fading into white ---------- */
   .stage {
     background: linear-gradient(180deg, var(--blue) 0%, var(--sky) 42%, var(--white) 100%);
-    padding: 26px 0 70px;
+    padding: 26px 0 40px;
   }
   .viewport {
     overflow: hidden;
@@ -93,15 +94,13 @@
     -webkit-mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
             mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
   }
+  .viewport.static { overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
+  .viewport.static .dup { display: none; }
   .track {
     display: flex;
     width: max-content;
-    animation: drift var(--dur, 60s) linear infinite;
     will-change: transform;
   }
-  .viewport:hover .track,
-  .track.hold { animation-play-state: paused; }
-  @keyframes drift { to { transform: translateX(-50%); } }
 
   .slide {
     flex: 0 0 auto;
@@ -159,18 +158,58 @@
   }
   .resume.show { display: inline-block; }
 
+  /* ---------- ratings ---------- */
+  .ratings {
+    background: var(--white);
+    text-align: center;
+    padding: 28px 24px 56px;
+  }
+  .ratings h2 { font: 600 1.5rem "Chakra Petch", sans-serif; }
+  .rate-input { margin-top: 14px; display: inline-flex; }
+  .star-btn {
+    background: none; border: 0; padding: 4px;
+    cursor: pointer; line-height: 0;
+  }
+  .star-btn svg {
+    width: 44px; height: 44px;
+    fill: var(--pale);
+    transition: fill .15s ease, transform .15s ease;
+  }
+  .star-btn.on svg { fill: var(--blue); }
+  .star-btn:hover svg { transform: scale(1.12); }
+  .rate-msg { margin-top: 6px; color: #3d4f80; min-height: 1.6em; }
+
+  .summary {
+    margin: 30px auto 0;
+    max-width: 340px;
+    padding: 26px 24px 22px;
+    border-radius: 18px;
+    background: var(--ice);
+    border: 1px solid var(--pale);
+  }
+  .summary h3 { font: 600 1rem "Manrope", sans-serif; color: #3d4f80; }
+  .avg {
+    margin-top: 6px;
+    font: 700 3.4rem/1 "Chakra Petch", sans-serif;
+    color: var(--blue);
+  }
+  .sd { position: relative; display: inline-flex; margin-top: 10px; }
+  .sd svg { width: 30px; height: 30px; margin: 0 2px; fill: var(--pale); flex: 0 0 auto; }
+  .sd-fill {
+    position: absolute; left: 0; top: 0;
+    display: flex; overflow: hidden; white-space: nowrap;
+    width: 0;
+  }
+  .sd-fill svg { fill: var(--blue); }
+  .count { margin-top: 8px; color: #3d4f80; font-size: .95rem; }
+  .note { margin: 16px auto 0; max-width: 46ch; font-size: .85rem; color: #6a7aa5; }
+
   footer {
     text-align: center;
     padding: 0 24px 40px;
     color: var(--navy);
     opacity: .7;
     font-size: .85rem;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .track { animation: none; }
-    .viewport { overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
-    .dup { display: none; }
   }
 </style>
 </head>
@@ -199,9 +238,26 @@
   </div>
 </main>
 
+<section class="ratings" aria-labelledby="rateTitle">
+  <h2 id="rateTitle">Rate my work</h2>
+  <div class="rate-input" id="stars" role="group" aria-label="Your rating"></div>
+  <p class="rate-msg" id="rateMsg">Tap a star to leave a rating</p>
+
+  <div class="summary">
+    <h3>What people have rated</h3>
+    <div class="avg" id="avg">-</div>
+    <div class="sd" aria-hidden="true">
+      <div id="sdBase"></div>
+      <div class="sd-fill" id="sdFill"></div>
+    </div>
+    <p class="count" id="count">Loading ratings...</p>
+  </div>
+  <p class="note" id="note" hidden></p>
+</section>
+
 <footer id="foot"></footer>
 
-<script>
+<script type="module">
 /* =========================================================
    EDIT THIS PART. Everything else can stay as it is.
    ========================================================= */
@@ -220,7 +276,16 @@ const CONFIG = {
     { url: "PASTE_YOUTUBE_LINK_3", title: "Project three" }
   ],
 
-  speed: 35                                       // scroll speed in pixels per second (lower = slower)
+  speed: 35,                                      // scroll speed in pixels per second (lower = slower)
+  respectReducedMotion: false,                    // true = stop auto scroll for people who turned animations off
+
+  // Ratings from visitors need a free Firebase database.
+  // Leave these empty until you set it up. The stars still work, but only on your own browser.
+  firebase: {
+    apiKey: "",
+    projectId: "",
+    appId: ""
+  }
 };
 /* ========================================================= */
 
@@ -273,6 +338,7 @@ const items = CONFIG.videos
 
 const base = items.length ? items : [null, null, null, null];
 const track = $("track");
+const viewport = $("viewport");
 const resumeBtn = $("resume");
 
 /* repeat the set so one half is always wider than the screen */
@@ -329,17 +395,193 @@ function makeSlide(item, isDup) {
 }
 
 [false, true].forEach((isDup) => unit.forEach((item) => track.appendChild(makeSlide(item, isDup))));
-
 resumeBtn.addEventListener("click", stopAll);
 
-/* set the speed from the real width of one half */
-function setSpeed() {
-  const half = track.scrollWidth / 2;
-  track.style.setProperty("--dur", (half / CONFIG.speed) + "s");
+/* auto scroll: moves the strip left a little every frame */
+const reduce = CONFIG.respectReducedMotion &&
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+if (reduce) {
+  viewport.classList.add("static");
+} else {
+  let offset = 0;
+  let last = null;
+  let hovering = false;
+  let touchTimer = null;
+
+  viewport.addEventListener("mouseenter", () => { hovering = true; });
+  viewport.addEventListener("mouseleave", () => { hovering = false; });
+  viewport.addEventListener("touchstart", () => {
+    hovering = true;
+    clearTimeout(touchTimer);
+  }, { passive: true });
+  viewport.addEventListener("touchend", () => {
+    touchTimer = setTimeout(() => { hovering = false; }, 1500);
+  });
+
+  function frame(t) {
+    if (last === null) last = t;
+    const dt = Math.min((t - last) / 1000, 0.1);
+    last = t;
+    if (!hovering && !track.classList.contains("hold")) {
+      const half = track.scrollWidth / 2;
+      offset += CONFIG.speed * dt;
+      if (half > 0 && offset >= half) offset -= half;
+      track.style.transform = "translate3d(" + (-offset) + "px,0,0)";
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
 }
-window.addEventListener("load", setSpeed);
-window.addEventListener("resize", setSpeed);
-setSpeed();
+
+/* ---------- ratings ---------- */
+const STAR = '<svg viewBox="0 0 24 24"><polygon points="12,2 15.1,8.6 22,9.3 16.8,14 18.2,21 12,17.5 5.8,21 7.2,14 2,9.3 8.9,8.6"/></svg>';
+const starsBox = $("stars");
+const msg = $("rateMsg");
+let mine = 0;
+let hoverN = 0;
+
+const btns = [];
+for (let n = 1; n <= 5; n++) {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.className = "star-btn";
+  b.innerHTML = STAR;
+  b.setAttribute("aria-label", "Rate " + n + (n === 1 ? " star" : " stars"));
+  b.addEventListener("mouseenter", () => { hoverN = n; paintInput(); });
+  b.addEventListener("mouseleave", () => { hoverN = 0; paintInput(); });
+  b.addEventListener("click", () => submit(n));
+  starsBox.appendChild(b);
+  btns.push(b);
+}
+
+function paintInput() {
+  const shown = hoverN || mine;
+  btns.forEach((b, i) => b.classList.toggle("on", i < shown));
+}
+
+$("sdBase").style.display = "flex";
+$("sdBase").innerHTML = STAR.repeat(5);
+$("sdFill").innerHTML = STAR.repeat(5);
+
+function paintSummary(avg, n, demo) {
+  if (!n) {
+    $("avg").textContent = "-";
+    $("sdFill").style.width = "0%";
+    $("count").textContent = "No ratings yet. Be the first!";
+    return;
+  }
+  $("avg").textContent = avg.toFixed(1);
+  $("sdFill").style.width = (avg / 5 * 100) + "%";
+  $("count").textContent = "Based on " + n + (n === 1 ? " rating" : " ratings") + (demo ? " (demo)" : "");
+}
+
+/* a random id for this visitor, so one person has one rating */
+function visitorId() {
+  try {
+    let id = localStorage.getItem("hypr_vid");
+    if (!id) {
+      id = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2));
+      localStorage.setItem("hypr_vid", id);
+    }
+    return id;
+  } catch (e) {
+    return "v" + Date.now() + Math.random().toString(16).slice(2);
+  }
+}
+const vid = visitorId();
+
+const fb = CONFIG.firebase || {};
+const online = !!(fb.apiKey && fb.projectId && fb.appId);
+let backend = null;
+
+async function setupBackend() {
+  if (!online) return null;
+  const v = "10.12.2";
+  const appMod = await import("https://www.gstatic.com/firebasejs/" + v + "/firebase-app.js");
+  const fsMod = await import("https://www.gstatic.com/firebasejs/" + v + "/firebase-firestore.js");
+  const app = appMod.initializeApp(fb);
+  const db = fsMod.getFirestore(app);
+  const col = fsMod.collection(db, "ratings");
+  return {
+    async save(stars) {
+      await fsMod.setDoc(fsMod.doc(db, "ratings", vid), { stars: stars, at: fsMod.serverTimestamp() });
+    },
+    async getMine() {
+      const d = await fsMod.getDoc(fsMod.doc(db, "ratings", vid));
+      return d.exists() ? d.data().stars : 0;
+    },
+    async summary() {
+      const snap = await fsMod.getAggregateFromServer(col, {
+        n: fsMod.count(),
+        avg: fsMod.average("stars")
+      });
+      const d = snap.data();
+      return { n: d.n, avg: d.avg || 0 };
+    }
+  };
+}
+
+function localMine() {
+  try { return Number(localStorage.getItem("hypr_rating")) || 0; } catch (e) { return 0; }
+}
+
+async function refresh() {
+  try {
+    if (backend) {
+      const s = await backend.summary();
+      paintSummary(s.avg, s.n, false);
+    } else {
+      const m = localMine();
+      paintSummary(m, m ? 1 : 0, true);
+    }
+  } catch (e) {
+    $("count").textContent = "Couldn't load ratings right now.";
+  }
+}
+
+async function submit(n) {
+  const had = mine;
+  mine = n;
+  paintInput();
+  msg.textContent = "Saving...";
+  try {
+    if (backend) {
+      await backend.save(n);
+    } else {
+      try { localStorage.setItem("hypr_rating", String(n)); } catch (e) {}
+    }
+    msg.textContent = had ? "Updated! You gave " + n + (n === 1 ? " star." : " stars.")
+                          : "Thanks! You gave " + n + (n === 1 ? " star." : " stars.");
+    await refresh();
+  } catch (e) {
+    mine = had;
+    paintInput();
+    msg.textContent = "Couldn't save your rating. Try again in a moment.";
+  }
+}
+
+(async function initRatings() {
+  if (!online) {
+    const note = $("note");
+    note.hidden = false;
+    note.textContent = "Demo mode: ratings are saved only in this browser. Add your Firebase details in CONFIG to collect ratings from everyone.";
+    mine = localMine();
+    paintInput();
+    if (mine) msg.textContent = "You gave " + mine + (mine === 1 ? " star." : " stars.");
+    await refresh();
+    return;
+  }
+  try {
+    backend = await setupBackend();
+    mine = await backend.getMine();
+    paintInput();
+    if (mine) msg.textContent = "You gave " + mine + (mine === 1 ? " star." : " stars.") + " Tap to change it.";
+  } catch (e) {
+    backend = null;
+  }
+  await refresh();
+})();
 </script>
 </body>
 </html>
