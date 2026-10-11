@@ -1,17 +1,345 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>hypr</title>
-  <style>
-    body { background:#0d1117; color:#fff; font-family:Arial,sans-serif; text-align:center; padding:60px 20px; }
-    h1 { font-size:3rem; margin-bottom:10px; }
-    p { color:#9aa4b2; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>hypr | GFX</title>
+<meta name="description" content="hypr's work. DM for commissions.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #061a52;
+    --blue: #1456f0;
+    --sky: #8fc0ff;
+    --ice: #eaf3ff;
+    --white: #ffffff;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html { background: var(--white); }
+  body {
+    min-height: 100vh;
+    color: var(--navy);
+    font-family: "Manrope", system-ui, sans-serif;
+    line-height: 1.55;
+    overflow-x: hidden;
+  }
+  :focus-visible { outline: 3px solid var(--navy); outline-offset: 3px; }
+
+  /* ---------- top: deep blue, white text ---------- */
+  .hero {
+    background:
+      radial-gradient(700px 320px at 50% 0, rgba(143,192,255,.35), transparent 70%),
+      linear-gradient(180deg, var(--navy) 0%, var(--blue) 100%);
+    color: var(--white);
+    text-align: center;
+    padding: 64px 24px 8px;
+  }
+  .profile { max-width: 640px; margin: 0 auto; }
+  .pfp, .pfp-fallback {
+    width: 128px; height: 128px;
+    border-radius: 50%;
+    margin: 0 auto 22px;
+    display: block;
+    border: 4px solid var(--white);
+    box-shadow: 0 8px 30px rgba(0,0,0,.35);
+  }
+  .pfp { object-fit: cover; background: var(--navy); }
+  .pfp-fallback {
+    display: grid; place-items: center;
+    background: var(--white); color: var(--blue);
+    font: 700 3rem "Chakra Petch", sans-serif;
+  }
+  h1 {
+    font: 700 clamp(2.6rem, 8vw, 3.8rem)/1 "Chakra Petch", sans-serif;
+    letter-spacing: .01em;
+  }
+  .tagline { margin-top: 10px; font-weight: 600; color: var(--ice); }
+  .bio { margin: 14px auto 0; max-width: 46ch; color: rgba(255,255,255,.85); }
+  .contact {
+    margin-top: 26px;
+    display: inline-flex; align-items: center; gap: 12px;
+    padding: 8px 8px 8px 20px;
+    border-radius: 999px;
+    background: var(--white);
+    color: var(--navy);
+    font-size: .95rem;
+    box-shadow: 0 8px 24px rgba(6,26,82,.35);
+  }
+  .contact b { font-weight: 700; }
+  .copy {
+    border: 0; cursor: pointer;
+    padding: 9px 18px;
+    border-radius: 999px;
+    background: var(--blue); color: var(--white);
+    font: 600 .9rem "Manrope", sans-serif;
+    transition: background .2s ease;
+  }
+  .copy:hover { background: var(--navy); }
+  .hero h2 {
+    margin-top: 56px;
+    font: 600 1.5rem "Chakra Petch", sans-serif;
+  }
+
+  /* ---------- work: blue fading into white ---------- */
+  .stage {
+    background: linear-gradient(180deg, var(--blue) 0%, var(--sky) 42%, var(--white) 100%);
+    padding: 26px 0 70px;
+  }
+  .viewport {
+    overflow: hidden;
+    padding: 14px 0 26px;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+            mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+  }
+  .track {
+    display: flex;
+    width: max-content;
+    animation: drift var(--dur, 60s) linear infinite;
+    will-change: transform;
+  }
+  .viewport:hover .track,
+  .track.hold { animation-play-state: paused; }
+  @keyframes drift { to { transform: translateX(-50%); } }
+
+  .slide {
+    flex: 0 0 auto;
+    width: min(420px, 78vw);
+    margin-right: 22px;
+    position: relative;
+    aspect-ratio: 16 / 9;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 3px solid var(--white);
+    background: var(--ice);
+    box-shadow: 0 12px 30px rgba(6,26,82,.35);
+    cursor: pointer;
+    color: var(--white);
+  }
+  .slide img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .slide iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .play {
+    position: absolute; left: 50%; top: 50%;
+    width: 64px; height: 64px; margin: -32px 0 0 -32px;
+    border-radius: 50%;
+    background: rgba(6,26,82,.7);
+    border: 2px solid var(--white);
+    display: grid; place-items: center;
+    transition: transform .2s ease, background .2s ease;
+  }
+  .play::before {
+    content: ""; margin-left: 5px;
+    border-left: 17px solid var(--white);
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+  }
+  .slide:hover .play { transform: scale(1.1); background: var(--blue); }
+  .cap {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    padding: 34px 16px 12px;
+    text-align: left; font-weight: 600;
+    background: linear-gradient(transparent, rgba(6,26,82,.85));
+  }
+  .placeholder {
+    position: absolute; inset: 0;
+    display: grid; place-items: center;
+    padding: 20px; text-align: center;
+    color: var(--navy); font-weight: 500;
+  }
+
+  .resume-row { text-align: center; min-height: 44px; }
+  .resume {
+    display: none;
+    border: 0; cursor: pointer;
+    padding: 10px 22px;
+    border-radius: 999px;
+    background: var(--navy); color: var(--white);
+    font: 600 .95rem "Manrope", sans-serif;
+  }
+  .resume.show { display: inline-block; }
+
+  footer {
+    text-align: center;
+    padding: 0 24px 40px;
+    color: var(--navy);
+    opacity: .7;
+    font-size: .85rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .track { animation: none; }
+    .viewport { overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
+    .dup { display: none; }
+  }
+</style>
 </head>
 <body>
-  <h1>hypr</h1>
-  <p>Welcome to my site!</p>
+
+<section class="hero">
+  <div class="profile">
+    <div id="pfpBox"></div>
+    <h1 id="name"></h1>
+    <p class="tagline" id="tagline"></p>
+    <p class="bio" id="bio"></p>
+    <div class="contact">
+      <span id="contactText"></span>
+      <button class="copy" id="copyBtn" type="button">Copy</button>
+    </div>
+  </div>
+  <h2>Recent work</h2>
+</section>
+
+<main class="stage">
+  <div class="viewport" id="viewport" aria-label="Video work">
+    <div class="track" id="track"></div>
+  </div>
+  <div class="resume-row">
+    <button class="resume" id="resume" type="button">Resume scrolling</button>
+  </div>
+</main>
+
+<footer id="foot"></footer>
+
+<script>
+/* =========================================================
+   EDIT THIS PART. Everything else can stay as it is.
+   ========================================================= */
+const CONFIG = {
+  name: "hypr",
+  tagline: "GFX designer",                       // change to whatever you do
+  bio: "Thumbnails, banners and more. Take a look at my recent work below.",
+  discord: "hypr.7",                              // shown on the contact button
+  pfp: "pfp.png",                                 // upload this image to your repo
+
+  // Paste your YouTube links here. Add or remove lines as you like.
+  // "title" is optional.
+  videos: [
+    { url: "PASTE_YOUTUBE_LINK_1", title: "Project one" },
+    { url: "PASTE_YOUTUBE_LINK_2", title: "Project two" },
+    { url: "PASTE_YOUTUBE_LINK_3", title: "Project three" }
+  ],
+
+  speed: 35                                       // scroll speed in pixels per second (lower = slower)
+};
+/* ========================================================= */
+
+const $ = (id) => document.getElementById(id);
+
+/* ---------- profile ---------- */
+$("name").textContent = CONFIG.name;
+$("tagline").textContent = CONFIG.tagline;
+$("bio").textContent = CONFIG.bio;
+$("contactText").innerHTML = "DM for commissions: <b></b>";
+$("contactText").querySelector("b").textContent = CONFIG.discord;
+$("foot").textContent = "\u00A9 " + new Date().getFullYear() + " " + CONFIG.name;
+document.title = CONFIG.name + " | GFX";
+
+const img = new Image();
+img.className = "pfp";
+img.alt = CONFIG.name + " profile picture";
+img.onload = () => $("pfpBox").appendChild(img);
+img.onerror = () => {
+  const f = document.createElement("div");
+  f.className = "pfp-fallback";
+  f.textContent = CONFIG.name.charAt(0).toUpperCase();
+  $("pfpBox").appendChild(f);
+};
+img.src = CONFIG.pfp;
+
+$("copyBtn").addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText(CONFIG.discord);
+    $("copyBtn").textContent = "Copied";
+  } catch (e) {
+    $("copyBtn").textContent = "Copy failed";
+  }
+  setTimeout(() => ($("copyBtn").textContent = "Copy"), 1600);
+});
+
+/* ---------- scrolling videos ---------- */
+function videoId(input) {
+  if (!input) return null;
+  const m = String(input).match(
+    /(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/|live\/))([\w-]{11})/
+  );
+  if (m) return m[1];
+  return /^[\w-]{11}$/.test(input) ? input : null;
+}
+
+const items = CONFIG.videos
+  .map((v) => ({ id: videoId(v.url), title: v.title || "" }))
+  .filter((v) => v.id);
+
+const base = items.length ? items : [null, null, null, null];
+const track = $("track");
+const resumeBtn = $("resume");
+
+/* repeat the set so one half is always wider than the screen */
+const repeats = Math.max(1, Math.ceil(2400 / (base.length * 442)));
+const unit = [];
+for (let r = 0; r < repeats; r++) base.forEach((b) => unit.push(b));
+
+function showThumb(s) {
+  const item = s._item;
+  delete s.dataset.playing;
+  s.innerHTML =
+    '<img alt="" loading="lazy" src="https://img.youtube.com/vi/' + item.id + '/hqdefault.jpg">' +
+    '<span class="play"></span>' +
+    (item.title ? '<div class="cap"></div>' : "");
+  if (item.title) s.querySelector(".cap").textContent = item.title;
+}
+
+function stopAll() {
+  track.querySelectorAll(".slide[data-playing]").forEach(showThumb);
+  track.classList.remove("hold");
+  resumeBtn.classList.remove("show");
+}
+
+function play(s) {
+  stopAll();
+  const f = document.createElement("iframe");
+  f.src = "https://www.youtube-nocookie.com/embed/" + s._item.id + "?autoplay=1&rel=0";
+  f.title = s._item.title || "YouTube video";
+  f.allow = "autoplay; encrypted-media; picture-in-picture; fullscreen";
+  f.allowFullscreen = true;
+  s.innerHTML = "";
+  s.appendChild(f);
+  s.dataset.playing = "1";
+  track.classList.add("hold");
+  resumeBtn.classList.add("show");
+}
+
+function makeSlide(item, isDup) {
+  const s = document.createElement("div");
+  s.className = "slide" + (isDup ? " dup" : "");
+  if (isDup) s.setAttribute("aria-hidden", "true");
+  if (item) {
+    s._item = item;
+    showThumb(s);
+    s.tabIndex = isDup ? -1 : 0;
+    s.addEventListener("click", () => { if (!s.dataset.playing) play(s); });
+    s.addEventListener("keydown", (e) => {
+      if ((e.key === "Enter" || e.key === " ") && !s.dataset.playing) { e.preventDefault(); play(s); }
+    });
+  } else {
+    s.innerHTML = '<div class="placeholder">Add your YouTube links in the CONFIG section of index.html</div>';
+  }
+  return s;
+}
+
+[false, true].forEach((isDup) => unit.forEach((item) => track.appendChild(makeSlide(item, isDup))));
+
+resumeBtn.addEventListener("click", stopAll);
+
+/* set the speed from the real width of one half */
+function setSpeed() {
+  const half = track.scrollWidth / 2;
+  track.style.setProperty("--dur", (half / CONFIG.speed) + "s");
+}
+window.addEventListener("load", setSpeed);
+window.addEventListener("resize", setSpeed);
+setSpeed();
+</script>
 </body>
 </html>
