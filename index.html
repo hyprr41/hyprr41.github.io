@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>hypr | GFX</title>
+<title>hypr | Video Editor</title>
 <meta name="description" content="hypr's work. DM for commissions.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -57,7 +57,7 @@
     letter-spacing: .01em;
   }
   .tagline { margin-top: 10px; font-weight: 600; color: var(--ice); }
-  .bio { margin: 14px auto 0; max-width: 46ch; color: rgba(255,255,255,.85); }
+  .bio { margin: 14px auto 0; max-width: 52ch; color: rgba(255,255,255,.85); }
   .contact {
     margin-top: 26px;
     display: inline-flex; align-items: center; gap: 12px;
@@ -204,6 +204,54 @@
   .count { margin-top: 8px; color: #3d4f80; font-size: .95rem; }
   .note { margin: 16px auto 0; max-width: 46ch; font-size: .85rem; color: #6a7aa5; }
 
+  .comment-form {
+    margin: 18px auto 0; max-width: 420px; text-align: left;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .comment-form[hidden] { display: none; }
+  .field { display: flex; flex-direction: column; gap: 6px; font-size: .9rem; font-weight: 600; color: #3d4f80; }
+  .field input, .field textarea {
+    font: 400 1rem "Manrope", sans-serif;
+    color: var(--navy);
+    padding: 11px 14px;
+    border: 1px solid var(--pale);
+    border-radius: 12px;
+    background: var(--white);
+    resize: vertical;
+  }
+  .field input:focus, .field textarea:focus {
+    outline: none; border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(20,86,240,.18);
+  }
+  .form-row { display: flex; justify-content: space-between; align-items: center; }
+  .counter { font-size: .85rem; color: #6a7aa5; }
+  .send {
+    border: 0; cursor: pointer;
+    padding: 11px 26px; border-radius: 999px;
+    background: var(--blue); color: var(--white);
+    font: 600 .95rem "Manrope", sans-serif;
+    transition: background .2s ease;
+  }
+  .send:hover { background: var(--navy); }
+  .send:disabled { opacity: .6; cursor: default; }
+
+  .said { margin-top: 36px; font: 600 1.2rem "Chakra Petch", sans-serif; }
+  .comments {
+    list-style: none; padding: 0; margin: 14px auto 0;
+    max-width: 520px;
+    display: flex; flex-direction: column; gap: 12px;
+    text-align: left;
+  }
+  .comments li {
+    padding: 14px 18px; border-radius: 14px;
+    background: var(--ice); border: 1px solid var(--pale);
+  }
+  .c-top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .c-top b { font-weight: 700; }
+  .c-stars { color: var(--blue); letter-spacing: 2px; white-space: nowrap; }
+  .comments p { margin-top: 6px; color: #2a3b6d; overflow-wrap: anywhere; }
+  .no-comments { margin-top: 12px; color: #6a7aa5; }
+
   footer {
     text-align: center;
     padding: 0 24px 40px;
@@ -243,6 +291,19 @@
   <div class="rate-input" id="stars" role="group" aria-label="Your rating"></div>
   <p class="rate-msg" id="rateMsg">Tap a star to leave a rating</p>
 
+  <div class="comment-form" id="form" hidden>
+    <label class="field"><span>Name (optional)</span>
+      <input id="cName" type="text" maxlength="40" autocomplete="nickname">
+    </label>
+    <label class="field"><span>Comment (optional)</span>
+      <textarea id="cText" rows="3" maxlength="300"></textarea>
+    </label>
+    <div class="form-row">
+      <span class="counter" id="cCount">0 / 300</span>
+      <button class="send" id="send" type="button">Submit</button>
+    </div>
+  </div>
+
   <div class="summary">
     <h3>What people have rated</h3>
     <div class="avg" id="avg">-</div>
@@ -252,6 +313,10 @@
     </div>
     <p class="count" id="count">Loading ratings...</p>
   </div>
+
+  <h3 class="said">What people said</h3>
+  <ul class="comments" id="comments"></ul>
+  <p class="no-comments" id="noComments" hidden>No comments yet.</p>
   <p class="note" id="note" hidden></p>
 </section>
 
@@ -263,8 +328,8 @@
    ========================================================= */
 const CONFIG = {
   name: "hypr",
-  tagline: "GFX designer",                       // change to whatever you do
-  bio: "Thumbnails, banners and more. Take a look at my recent work below.",
+  tagline: "Video Editor",                        // change to whatever you do
+  bio: "YouTube videos, Shorts, TikToks and more. I've been editing for 3+ years, creating clean, smooth and engaging edits in any style. Take a look at my recent work below!",
   discord: "hypr.7",                              // shown on the contact button
   pfp: "pfp.png",                                 // upload this image to your repo
 
@@ -298,7 +363,7 @@ $("bio").textContent = CONFIG.bio;
 $("contactText").innerHTML = "DM for commissions: <b></b>";
 $("contactText").querySelector("b").textContent = CONFIG.discord;
 $("foot").textContent = "\u00A9 " + new Date().getFullYear() + " " + CONFIG.name;
-document.title = CONFIG.name + " | GFX";
+document.title = CONFIG.name + " | " + CONFIG.tagline;
 
 const img = new Image();
 img.className = "pfp";
@@ -434,12 +499,17 @@ if (reduce) {
   requestAnimationFrame(frame);
 }
 
-/* ---------- ratings ---------- */
+/* ---------- ratings and comments ---------- */
 const STAR = '<svg viewBox="0 0 24 24"><polygon points="12,2 15.1,8.6 22,9.3 16.8,14 18.2,21 12,17.5 5.8,21 7.2,14 2,9.3 8.9,8.6"/></svg>';
 const starsBox = $("stars");
 const msg = $("rateMsg");
-let mine = 0;
+const form = $("form");
+const nameIn = $("cName");
+const textIn = $("cText");
+const sendBtn = $("send");
+let picked = 0;
 let hoverN = 0;
+let saved = null;
 
 const btns = [];
 for (let n = 1; n <= 5; n++) {
@@ -450,15 +520,25 @@ for (let n = 1; n <= 5; n++) {
   b.setAttribute("aria-label", "Rate " + n + (n === 1 ? " star" : " stars"));
   b.addEventListener("mouseenter", () => { hoverN = n; paintInput(); });
   b.addEventListener("mouseleave", () => { hoverN = 0; paintInput(); });
-  b.addEventListener("click", () => submit(n));
+  b.addEventListener("click", () => {
+    picked = n;
+    paintInput();
+    form.hidden = false;
+    msg.textContent = n + (n === 1 ? " star" : " stars") + " selected. Add a comment if you like, then submit.";
+    sendBtn.textContent = saved ? "Update" : "Submit";
+  });
   starsBox.appendChild(b);
   btns.push(b);
 }
 
 function paintInput() {
-  const shown = hoverN || mine;
+  const shown = hoverN || picked;
   btns.forEach((b, i) => b.classList.toggle("on", i < shown));
 }
+
+textIn.addEventListener("input", () => {
+  $("cCount").textContent = textIn.value.length + " / 300";
+});
 
 $("sdBase").style.display = "flex";
 $("sdBase").innerHTML = STAR.repeat(5);
@@ -474,6 +554,30 @@ function paintSummary(avg, n, demo) {
   $("avg").textContent = avg.toFixed(1);
   $("sdFill").style.width = (avg / 5 * 100) + "%";
   $("count").textContent = "Based on " + n + (n === 1 ? " rating" : " ratings") + (demo ? " (demo)" : "");
+}
+
+function paintComments(list) {
+  const ul = $("comments");
+  ul.innerHTML = "";
+  $("noComments").hidden = list.length > 0;
+  list.forEach((c) => {
+    const li = document.createElement("li");
+    const top = document.createElement("div");
+    top.className = "c-top";
+    const who = document.createElement("b");
+    who.textContent = c.name || "Anonymous";
+    const st = document.createElement("span");
+    st.className = "c-stars";
+    st.setAttribute("aria-label", c.stars + " out of 5 stars");
+    st.textContent = "\u2605".repeat(c.stars) + "\u2606".repeat(5 - c.stars);
+    top.appendChild(who);
+    top.appendChild(st);
+    const p = document.createElement("p");
+    p.textContent = c.comment;
+    li.appendChild(top);
+    li.appendChild(p);
+    ul.appendChild(li);
+  });
 }
 
 /* a random id for this visitor, so one person has one rating */
@@ -496,7 +600,6 @@ const online = !!(fb.apiKey && fb.projectId && fb.appId);
 let backend = null;
 
 async function setupBackend() {
-  if (!online) return null;
   const v = "10.12.2";
   const appMod = await import("https://www.gstatic.com/firebasejs/" + v + "/firebase-app.js");
   const fsMod = await import("https://www.gstatic.com/firebasejs/" + v + "/firebase-firestore.js");
@@ -504,12 +607,16 @@ async function setupBackend() {
   const db = fsMod.getFirestore(app);
   const col = fsMod.collection(db, "ratings");
   return {
-    async save(stars) {
-      await fsMod.setDoc(fsMod.doc(db, "ratings", vid), { stars: stars, at: fsMod.serverTimestamp() });
+    async save(r) {
+      await fsMod.setDoc(fsMod.doc(db, "ratings", vid), {
+        stars: r.stars, name: r.name, comment: r.comment, at: fsMod.serverTimestamp()
+      });
     },
     async getMine() {
       const d = await fsMod.getDoc(fsMod.doc(db, "ratings", vid));
-      return d.exists() ? d.data().stars : 0;
+      if (!d.exists()) return null;
+      const x = d.data();
+      return { stars: x.stars, name: x.name || "", comment: x.comment || "" };
     },
     async summary() {
       const snap = await fsMod.getAggregateFromServer(col, {
@@ -518,12 +625,24 @@ async function setupBackend() {
       });
       const d = snap.data();
       return { n: d.n, avg: d.avg || 0 };
+    },
+    async comments() {
+      const q = fsMod.query(col, fsMod.orderBy("at", "desc"), fsMod.limit(40));
+      const snap = await fsMod.getDocs(q);
+      const out = [];
+      snap.forEach((d) => {
+        const x = d.data();
+        if (x.comment && String(x.comment).trim()) {
+          out.push({ stars: x.stars, name: x.name || "", comment: String(x.comment) });
+        }
+      });
+      return out.slice(0, 12);
     }
   };
 }
 
 function localMine() {
-  try { return Number(localStorage.getItem("hypr_rating")) || 0; } catch (e) { return 0; }
+  try { return JSON.parse(localStorage.getItem("hypr_rating_v2")) || null; } catch (e) { return null; }
 }
 
 async function refresh() {
@@ -531,52 +650,68 @@ async function refresh() {
     if (backend) {
       const s = await backend.summary();
       paintSummary(s.avg, s.n, false);
+      paintComments(await backend.comments());
     } else {
       const m = localMine();
-      paintSummary(m, m ? 1 : 0, true);
+      paintSummary(m ? m.stars : 0, m ? 1 : 0, true);
+      paintComments(m && m.comment ? [m] : []);
     }
   } catch (e) {
     $("count").textContent = "Couldn't load ratings right now.";
   }
 }
 
-async function submit(n) {
-  const had = mine;
-  mine = n;
-  paintInput();
+async function submit() {
+  if (!picked) return;
+  const r = {
+    stars: picked,
+    name: nameIn.value.trim().slice(0, 40),
+    comment: textIn.value.trim().slice(0, 300)
+  };
+  sendBtn.disabled = true;
   msg.textContent = "Saving...";
   try {
     if (backend) {
-      await backend.save(n);
+      await backend.save(r);
     } else {
-      try { localStorage.setItem("hypr_rating", String(n)); } catch (e) {}
+      try { localStorage.setItem("hypr_rating_v2", JSON.stringify(r)); } catch (e) {}
     }
-    msg.textContent = had ? "Updated! You gave " + n + (n === 1 ? " star." : " stars.")
-                          : "Thanks! You gave " + n + (n === 1 ? " star." : " stars.");
+    msg.textContent = (saved ? "Updated! " : "Thanks! ") + "You gave " + r.stars + (r.stars === 1 ? " star." : " stars.");
+    saved = r;
+    sendBtn.textContent = "Update";
     await refresh();
   } catch (e) {
-    mine = had;
-    paintInput();
-    msg.textContent = "Couldn't save your rating. Try again in a moment.";
+    msg.textContent = "Couldn't save that. Try again in a moment.";
   }
+  sendBtn.disabled = false;
+}
+sendBtn.addEventListener("click", submit);
+
+function loadMine(m) {
+  if (!m || !m.stars) return;
+  saved = m;
+  picked = m.stars;
+  nameIn.value = m.name || "";
+  textIn.value = m.comment || "";
+  $("cCount").textContent = textIn.value.length + " / 300";
+  form.hidden = false;
+  sendBtn.textContent = "Update";
+  msg.textContent = "You gave " + m.stars + (m.stars === 1 ? " star." : " stars.") + " Tap a star to change it.";
+  paintInput();
 }
 
 (async function initRatings() {
   if (!online) {
     const note = $("note");
     note.hidden = false;
-    note.textContent = "Demo mode: ratings are saved only in this browser. Add your Firebase details in CONFIG to collect ratings from everyone.";
-    mine = localMine();
-    paintInput();
-    if (mine) msg.textContent = "You gave " + mine + (mine === 1 ? " star." : " stars.");
+    note.textContent = "Demo mode: ratings and comments are saved only in this browser. Add your Firebase details in CONFIG to collect them from everyone.";
+    loadMine(localMine());
     await refresh();
     return;
   }
   try {
     backend = await setupBackend();
-    mine = await backend.getMine();
-    paintInput();
-    if (mine) msg.textContent = "You gave " + mine + (mine === 1 ? " star." : " stars.") + " Tap to change it.";
+    loadMine(await backend.getMine());
   } catch (e) {
     backend = null;
   }
