@@ -165,7 +165,7 @@
   }
   .card:hover { transform: translateY(-6px); box-shadow: 0 20px 40px rgba(6,26,82,.42); }
   .cimg {
-    aspect-ratio: 1200 / 735;
+    aspect-ratio: 1200 / 663;
     overflow: hidden;
     background: var(--navy);
   }
@@ -338,6 +338,13 @@
 /* =========================================================
    EDIT THIS PART. Everything else can stay as it is.
    ========================================================= */
+/* Your price list. Both editing styles below use it. */
+const PRICES = [
+  { name: "Shorts",        price: "$5",      note: "Fully edited Short (0\u201360 seconds)" },
+  { name: "Long form",     price: "$15-30",  note: "Fully edited long-form video (8\u201315 minutes)" },
+  { name: "Discord Nitro", price: "$10",     note: "" }
+];
+
 const CONFIG = {
   name: "hypr",
   tagline: "Video Editor",
@@ -370,14 +377,21 @@ const CONFIG = {
       blurb: "Fast, clean Gorilla Tag edits. Check out my showreel, recent work and prices below.",
       showreel: { url: "https://youtu.be/_abKATi9mWo", title: "Showreel" },
       works: [
-        { url: "" }
+        { url: "https://www.youtube.com/watch?v=wwkGmlEFaPw", title: "30s Client Video" }
       ],
-      prices: [
-        { name: "Short edit",    price: "$5", note: "Fully editied short 0-60 seconds." },
-        { name: "Full video",    price: "$XX", note: "Change this text to describe what is included." }
-      ]
+      prices: PRICES
     },
-    { id: "style2", title: "Editing style 2", image: "", blurb: "Coming soon.", showreel: null, works: [], prices: [] },
+    {
+      id: "roblox",
+      title: "Roblox editing style",
+      image: "roblox.jpg",
+      blurb: "Clean, fast Roblox edits. Check out my recent work and prices below.",
+      showreel: null,                             // paste a link like { url: "https://youtu.be/...", title: "Showreel" }
+      works: [
+        // { url: "https://www.youtube.com/watch?v=XXXXXXXXXXX", title: "My Roblox edit" }
+      ],
+      prices: PRICES
+    },
     { id: "style3", title: "Editing style 3", image: "", blurb: "Coming soon.", showreel: null, works: [], prices: [] },
     { id: "style4", title: "Editing style 4", image: "", blurb: "Coming soon.", showreel: null, works: [], prices: [] }
   ]
