@@ -342,7 +342,7 @@
 const PRICES = [
   { name: "Shorts",        price: "$5",      note: "Fully edited Short (0\u201360 seconds)" },
   { name: "Long form",     price: "$15-30",  note: "Fully edited long-form video (8\u201315 minutes)" },
-  { name: "Discord Nitro", price: "$10",     note: "" }
+  { name: "Discord Nitro", price: "$10",     note: "Gift Discord Nitro, must be $10 (8-10 mins)" }
 ];
 
 const CONFIG = {
@@ -392,7 +392,17 @@ const CONFIG = {
       ],
       prices: PRICES
     },
-    { id: "style3", title: "Editing style 3", image: "", blurb: "Coming soon.", showreel: null, works: [], prices: [] },
+    {
+      id: "minecraft",
+      title: "Minecraft editing style",
+      image: "minecraft.jpg",
+      blurb: "Clean, fast Minecraft edits. Check out my recent work and prices below.",
+      showreel: null,                             // paste a link like { url: "https://youtu.be/...", title: "Showreel" }
+      works: [
+        // { url: "https://www.youtube.com/watch?v=XXXXXXXXXXX", title: "My Minecraft edit" }
+      ],
+      prices: PRICES
+    },
     { id: "style4", title: "Editing style 4", image: "", blurb: "Coming soon.", showreel: null, works: [], prices: [] }
   ]
 };
