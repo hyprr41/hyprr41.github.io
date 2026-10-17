@@ -269,6 +269,16 @@
     background: var(--ice);
     border: 1px solid var(--pale);
   }
+  .badge {
+    display: inline-block;
+    margin-bottom: 10px;
+    padding: 3px 12px;
+    border-radius: 999px;
+    background: var(--blue);
+    color: var(--white);
+    font-weight: 700;
+    font-size: .8rem;
+  }
   .price h3 { font: 600 1.05rem "Manrope", sans-serif; }
   .price .amt { margin: 6px 0; font: 700 2.2rem/1.1 "Chakra Petch", sans-serif; color: var(--blue); }
   .price p { color: #3d4f80; font-size: .92rem; }
@@ -342,7 +352,7 @@
 const PRICES = [
   { name: "Shorts",        price: "$5",      note: "Fully edited Short (0\u201360 seconds)" },
   { name: "Long form",     price: "$15-30",  note: "Fully edited long-form video (8\u201315 minutes)" },
-  { name: "Discord Nitro", price: "$10",     note: "Gift Discord Nitro, must be $10 (8-10 mins)" }
+  { name: "Discord Nitro", price: "$10",     note: "Gift Discord Nitro, must be $10 (8-10 mins)", badge: "$5 discount!" }
 ];
 
 const CONFIG = {
@@ -594,6 +604,7 @@ function showStyle(st) {
     const g = make("div", "prices");
     st.prices.forEach((pr) => {
       const c = make("div", "price");
+      if (pr.badge) c.appendChild(make("div", "badge", pr.badge));
       c.appendChild(make("h3", "", pr.name || ""));
       c.appendChild(make("div", "amt", pr.price || ""));
       if (pr.note) c.appendChild(make("p", "", pr.note));
