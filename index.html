@@ -283,7 +283,7 @@
 
   .review {
     flex: 0 0 auto;
-    width: min(340px, 80vw);
+    width: min(380px, 80vw);
     margin-right: 20px;
     padding: 20px;
     border-radius: 18px;
@@ -295,8 +295,7 @@
   }
   .review:hover { border-color: var(--accent); }
   .review p { color: var(--text); overflow-wrap: anywhere; }
-  .review .who { margin-top: auto; font-weight: 700; color: var(--accent); }
-  .review img { width: 100%; display: block; border-radius: 12px; }
+  .review > img { width: 100%; display: block; border-radius: 12px; }
   .rstars { display: inline-flex; gap: 2px; }
   .rstars svg { width: 18px; height: 18px; fill: #26335c; }
   .rstars svg.on { fill: var(--gold); animation: twinkle 3.2s ease-in-out infinite; }
@@ -309,6 +308,37 @@
     50% { filter: drop-shadow(0 0 5px rgba(255,201,77,.8)); transform: scale(1.12); }
   }
   .calm .rstars svg.on { animation: none; }
+
+  /* drag / grab feel for the strips */
+  .viewport { cursor: grab; -webkit-user-select: none; user-select: none; }
+  .viewport.dragging { cursor: grabbing; }
+  .track img { -webkit-user-drag: none; user-drag: none; }
+
+  /* review card details */
+  .rhead { display: flex; align-items: center; gap: 12px; }
+  .avatar {
+    width: 48px; height: 48px; border-radius: 50%;
+    object-fit: cover; flex: none;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 14px var(--glow);
+  }
+  .review .who { font-weight: 700; color: var(--text); }
+  .review .meta { color: var(--mute); font-size: .85rem; }
+  .review p { white-space: pre-line; }
+
+  /* a few reviews: shown in the middle and fade in one by one */
+  .reviews-still {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 20px;
+    padding: 12px 20px 18px;
+  }
+  .reviews-still .review { width: min(560px, 92vw); margin: 0; }
+  .review.pop {
+    opacity: 0;
+    transform: translateY(28px) scale(.97);
+    transition: opacity .8s ease, transform .8s cubic-bezier(.2,.8,.2,1), border-color .25s ease;
+    transition-delay: calc(var(--i, 0) * 150ms), calc(var(--i, 0) * 150ms), 0s;
+  }
+  .reviews-still.in .review.pop { opacity: 1; transform: none; }
 
   /* ---------- style page ---------- */
   .hero.small { padding-top: 36px; padding-bottom: 28px; }
@@ -413,12 +443,7 @@
 
       <section class="block" id="recentBlock" hidden>
         <h2>Recent work</h2>
-        <div class="viewport" id="recentView" aria-label="Recent work">
-          <div class="track" id="recentTrack"></div>
-        </div>
-        <div class="resume-row">
-          <button class="resume" id="resume" type="button">Resume scrolling</button>
-        </div>
+        <div id="recentWrap"></div>
       </section>
 
       <section class="block" id="reviewsBlock" hidden>
@@ -434,6 +459,7 @@
         <div class="viewport" id="reviewView" aria-label="Reviews">
           <div class="track" id="reviewTrack"></div>
         </div>
+        <div class="reviews-still" id="reviewStill" hidden></div>
       </section>
     </main>
   </div>
@@ -485,22 +511,30 @@ const CONFIG = {
   logoSlideSeconds: 45,                           // how fast the YouTube logos slide down (higher = slower)
   respectReducedMotion: false,                    // true = stop the moving stuff for people who turned animations off
 
-  /* RECENT WORK strip on the home page (it scrolls by itself, and stops when you hover it).
+  /* RECENT WORK strip on the home page (it scrolls by itself, stops when you hover it,
+     and you can drag it with the mouse or swipe it on a phone).
      Leave this empty and it uses every video from your editing style pages below.
      Or list your own videos here, for example:
        { url: "https://youtu.be/XXXXXXXXXXX", title: "My edit", tag: "Roblox" }                */
   recentWork: [],
-  recentSpeed: 35,                                // pixels per second (lower = slower)
+  recentSpeed: 60,                                // pixels per second (lower = slower)
 
-  /* REVIEWS. Add yours here and the section shows up (it stays hidden while this is empty).
-     Text review:       { name: "Their name", stars: 5, text: "What they said" }
-     Screenshot review: { image: "review1.png", stars: 5 }     (upload the picture to your repo)
-     "stars" is optional. The average at the top is worked out from the stars you give.        */
+  /* REVIEWS. Add yours here (the section stays hidden while this is empty).
+     name   : who left it            stars : 1 to 5 (the average is worked out from these)
+     avatar : their profile picture file (optional, upload it to your repo)
+     meta   : small line under their name (optional)       text : what they said
+     Or a screenshot review: { image: "review1.png", stars: 5 }
+     With 1 to 3 reviews they sit in the middle. With 4 or more they scroll by themselves.     */
   reviews: [
-    // { name: "Customer name", stars: 5, text: "Super fast and the edit was clean!" },
-    // { image: "review1.png", stars: 5 }
+    {
+      name: "Trey",
+      avatar: "trey.jpg",
+      meta: "3 videos done, $60 total",
+      stars: 5,
+      text: "awesome editor, literally took in all the revisions i had (it was a lot because im picky) and provides great editing quality in a short turnaround time\nif you guys want a fast editor thats good at what he does, go with this guy istg, long term editor going forward for SURE\namazing communicator and have literally no reason not to recommend."
+    }
   ],
-  reviewSpeed: 28,
+  reviewSpeed: 40,
 
   /* The editing style boxes on the home page. Each one opens its own page.
      id        : used in the link (keep it short, no spaces)
@@ -696,22 +730,54 @@ function makeVideo(item, opts) {
   return v;
 }
 
-/* ---------- a strip that scrolls by itself (pauses on hover) ---------- */
+/* ---------- a strip that scrolls by itself (pauses on hover, drag to move it) ---------- */
 function startMarquee(viewport, track, speed, dir) {
   if (reduce) { viewport.classList.add("static"); return; }
   let offset = null, last = null, hover = false, timer = null;
+  let dragging = false, moved = false, startX = 0, startOff = 0;
+
+  viewport.style.touchAction = "pan-y";
   viewport.addEventListener("mouseenter", () => { hover = true; });
   viewport.addEventListener("mouseleave", () => { hover = false; });
   viewport.addEventListener("touchstart", () => { hover = true; clearTimeout(timer); }, { passive: true });
   viewport.addEventListener("touchend", () => { timer = setTimeout(() => { hover = false; }, 1500); });
+  viewport.addEventListener("dragstart", (e) => e.preventDefault());
+
+  /* drag it with the mouse or a finger */
+  viewport.addEventListener("pointerdown", (e) => {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    dragging = true; moved = false; startX = e.clientX; startOff = offset || 0;
+  });
+  window.addEventListener("pointermove", (e) => {
+    if (!dragging) return;
+    const dx = e.clientX - startX;
+    if (Math.abs(dx) > 6) { moved = true; viewport.classList.add("dragging"); }
+    if (moved) offset = startOff - dx;
+  });
+  const endDrag = () => { dragging = false; viewport.classList.remove("dragging"); };
+  window.addEventListener("pointerup", endDrag);
+  window.addEventListener("pointercancel", endDrag);
+  viewport.addEventListener("click", (e) => {
+    if (moved) { e.stopPropagation(); e.preventDefault(); moved = false; }   // a drag is not a click
+  }, true);
+
+  /* sideways trackpad / mouse wheel moves it too */
+  viewport.addEventListener("wheel", (e) => {
+    if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+      e.preventDefault();
+      if (offset !== null) offset += e.deltaX;
+    }
+  }, { passive: false });
+
   function frame(t) {
+    if (!viewport.isConnected) return;            // the strip was removed, so stop
     if (last === null) last = t;
     const dt = Math.min((t - last) / 1000, 0.1);
     last = t;
     const half = track.scrollWidth / 2;
     if (half > 0) {
       if (offset === null) offset = dir > 0 ? 0 : half;
-      if (!hover && !track.classList.contains("hold")) offset += dir * speed * dt;
+      if (!hover && !dragging && !track.classList.contains("hold")) offset += dir * speed * dt;
       if (offset >= half) offset -= half;
       if (offset < 0) offset += half;
       track.style.transform = "translate3d(" + (-offset) + "px,0,0)";
@@ -733,18 +799,46 @@ function fillTrack(track, list, build, itemWidth) {
   }));
 }
 
+/* a row of videos that scrolls by itself. Returns a function that stops any playing video. */
+function videoStrip(list, speed, wrapEl) {
+  const viewport = make("div", "viewport");
+  const track = make("div", "track");
+  viewport.appendChild(track);
+  const resume = make("button", "resume", "Resume scrolling");
+  resume.type = "button";
+  const row = make("div", "resume-row");
+  row.appendChild(resume);
+
+  function reset(v) {
+    const fresh = makeVideo(v._item, v._opts);
+    fresh._opts = v._opts;
+    v.replaceWith(fresh);
+  }
+  function stop() {
+    track.querySelectorAll(".vid[data-playing]").forEach(reset);
+    track.classList.remove("hold");
+    resume.classList.remove("show");
+  }
+  fillTrack(track, list, (item, dup) => {
+    const opts = { dup: dup, onPlay: () => {
+      track.querySelectorAll(".vid[data-playing]").forEach(reset);
+      track.classList.add("hold");
+      resume.classList.add("show");
+    } };
+    const v = makeVideo(item, opts);
+    v._opts = opts;
+    return v;
+  }, 440);
+  resume.addEventListener("click", stop);
+
+  wrapEl.appendChild(viewport);
+  wrapEl.appendChild(row);
+  startMarquee(viewport, track, speed, 1);
+  return stop;
+}
+
 /* ---------- home: recent work (scrolls by itself) ---------- */
-const recentTrack = $("recentTrack");
-function resetVideo(v) {
-  const fresh = makeVideo(v._item, v._opts);
-  fresh._opts = v._opts;
-  v.replaceWith(fresh);
-}
-function stopRecent() {
-  recentTrack.querySelectorAll(".vid[data-playing]").forEach(resetVideo);
-  recentTrack.classList.remove("hold");
-  $("resume").classList.remove("show");
-}
+let stopRecent = () => {};
 (function buildRecent() {
   let list = (CONFIG.recentWork || []).filter((w) => videoId(w.url));
   if (!list.length) {
@@ -756,18 +850,7 @@ function stopRecent() {
   }
   if (!list.length) return;
   $("recentBlock").hidden = false;
-  fillTrack(recentTrack, list, (item, dup) => {
-    const opts = { dup: dup, onPlay: () => {
-      recentTrack.querySelectorAll(".vid[data-playing]").forEach(resetVideo);
-      recentTrack.classList.add("hold");
-      $("resume").classList.add("show");
-    } };
-    const v = makeVideo(item, opts);
-    v._opts = opts;
-    return v;
-  }, 440);
-  $("resume").addEventListener("click", stopRecent);
-  startMarquee($("recentView"), recentTrack, CONFIG.recentSpeed, 1);
+  stopRecent = videoStrip(list, CONFIG.recentSpeed, $("recentWrap"));
 })();
 
 /* ---------- home: reviews (animated) ---------- */
@@ -795,14 +878,35 @@ function reviewCard(r) {
     im.loading = "lazy";
     im.src = r.image;
     c.appendChild(im);
-    if (hasStars) c.appendChild(starsRow(r.stars));
-    if (r.name) c.appendChild(make("div", "who", r.name));
-  } else {
-    if (hasStars) c.appendChild(starsRow(r.stars));
-    if (r.text) c.appendChild(make("p", "", r.text));
-    if (r.name) c.appendChild(make("div", "who", r.name));
   }
+  if (r.name || r.avatar || r.meta) {
+    const head = make("div", "rhead");
+    if (r.avatar) {
+      const av = new Image();
+      av.className = "avatar";
+      av.alt = "";
+      av.onerror = () => av.remove();
+      av.src = r.avatar;
+      head.appendChild(av);
+    }
+    const who = make("div");
+    if (r.name) who.appendChild(make("div", "who", r.name));
+    if (r.meta) who.appendChild(make("div", "meta", r.meta));
+    head.appendChild(who);
+    c.appendChild(head);
+  }
+  if (hasStars) c.appendChild(starsRow(r.stars));
+  if (r.text) c.appendChild(make("p", "", r.text));
   return c;
+}
+
+/* adds the class "in" when the thing scrolls into view */
+function whenVisible(el, fn, threshold) {
+  if (reduce || !("IntersectionObserver" in window)) { fn(); return; }
+  const io = new IntersectionObserver((entries) => {
+    if (entries.some((e) => e.isIntersecting)) { fn(); io.disconnect(); }
+  }, { threshold: threshold || 0.3 });
+  io.observe(el);
 }
 
 (function buildReviews() {
@@ -821,7 +925,7 @@ function reviewCard(r) {
     $("count").textContent = "Based on " + rated.length + (rated.length === 1 ? " review" : " reviews");
     $("avg").textContent = avg.toFixed(1);
 
-    const play = () => {
+    whenVisible($("summary"), () => {
       $("summary").classList.add("in");
       if (reduce) return;
       const t0 = performance.now(), dur = 1400;
@@ -831,19 +935,26 @@ function reviewCard(r) {
         $("avg").textContent = (avg * e).toFixed(1);
         if (p < 1) requestAnimationFrame(tick);
       })(t0);
-    };
-    if ("IntersectionObserver" in window) {
-      const io = new IntersectionObserver((entries) => {
-        if (entries.some((e) => e.isIntersecting)) { play(); io.disconnect(); }
-      }, { threshold: 0.4 });
-      io.observe($("summary"));
-    } else {
-      play();
-    }
+    }, 0.4);
   }
 
-  fillTrack($("reviewTrack"), list, (r) => reviewCard(r), 360);
-  startMarquee($("reviewView"), $("reviewTrack"), CONFIG.reviewSpeed, -1);   // moves the other way
+  if (list.length >= 4) {
+    // lots of reviews: they scroll by themselves, the other way
+    fillTrack($("reviewTrack"), list, (r) => reviewCard(r), 400);
+    startMarquee($("reviewView"), $("reviewTrack"), CONFIG.reviewSpeed, -1);
+  } else {
+    // a few reviews: shown in the middle, fading in one by one
+    $("reviewView").hidden = true;
+    const still = $("reviewStill");
+    still.hidden = false;
+    list.forEach((r, i) => {
+      const c = reviewCard(r);
+      c.classList.add("pop");
+      c.style.setProperty("--i", i);
+      still.appendChild(c);
+    });
+    whenVisible(still, () => still.classList.add("in"), 0.25);
+  }
 })();
 
 /* ---------- one style page ---------- */
@@ -873,11 +984,16 @@ function showStyle(st) {
     anything = true;
   }
 
-  const works = (st.works || []).map((w) => makeVideo(w, { fill: true })).filter(Boolean);
-  if (works.length) {
+  const worksList = (st.works || []).filter((w) => videoId(w.url));
+  if (worksList.length >= 2) {
+    const p = panel("Recent work");               // scrolls by itself when there are 2 or more
+    videoStrip(worksList, CONFIG.recentSpeed, p);
+    box.appendChild(p);
+    anything = true;
+  } else if (worksList.length === 1) {
     const p = panel("Recent work");
     const g = make("div", "vids");
-    works.forEach((w) => g.appendChild(w));
+    g.appendChild(makeVideo(worksList[0], { fill: true }));
     p.appendChild(g);
     box.appendChild(p);
     anything = true;
