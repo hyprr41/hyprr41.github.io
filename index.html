@@ -332,6 +332,7 @@
     padding: 12px 20px 18px;
   }
   .reviews-still .review { width: min(560px, 92vw); margin: 0; }
+  .reviews-still[data-n="3"] .review { width: min(380px, 92vw); }
   .review.pop {
     opacity: 0;
     transform: translateY(28px) scale(.97);
@@ -490,7 +491,7 @@
 const PRICES = [
   { name: "Shorts",        price: "$5",      note: "Fully edited Short (0\u201360 seconds)" },
   { name: "Long form",     price: "$15-30",  note: "Fully edited long-form video (8\u201315 minutes)" },
-  { name: "Robux", price: "$2.5k",     note: "Fully edited long-form video (8-10 mins)", badge: "$12 discount!" }
+  { name: "Robux",         price: "$2.5k",   note: "Fully edited long-form video (8-10 mins)", badge: "$12 discount!" }
 ];
 
 const CONFIG = {
@@ -539,6 +540,13 @@ const CONFIG = {
       meta: "1 video done, 2.5k robux",
       stars: 5,
       text: "Great guy to work with and provides good editing quality.\nQuick responses and overall would recommend."
+    },
+    {
+      name: "spaxrr",
+      avatar: "spaxrr.jpg",
+      meta: "1 video done, 700 robux",
+      stars: 5,
+      text: "his work is AMAZING for such a low price and he can work on a time limit. if you need video editing done for cheap DEF go to @hypr\n\nalso really respectful and listened to what i had to say\n\nW @hypr"
     }
   ],
   reviewSpeed: 40,
@@ -957,6 +965,7 @@ function whenVisible(el, fn, threshold) {
     $("reviewView").hidden = true;
     const still = $("reviewStill");
     still.hidden = false;
+    still.dataset.n = list.length;
     list.forEach((r, i) => {
       const c = reviewCard(r);
       c.classList.add("pop");
