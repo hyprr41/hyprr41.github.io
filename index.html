@@ -414,6 +414,144 @@
     font-size: .85rem;
   }
 
+  /* ===================== MOTION LAYER ===================== */
+  :root { --ease: cubic-bezier(.22,1,.36,1); --spring: cubic-bezier(.34,1.56,.64,1); }
+  html { scroll-behavior: smooth; }
+
+  /* scroll progress bar */
+  .progress {
+    position: fixed; left: 0; top: 0; width: 100%; height: 3px; z-index: 60;
+    transform-origin: 0 50%; transform: scaleX(0);
+    background: linear-gradient(90deg, var(--accent2), #7dd3fc, var(--accent));
+    box-shadow: 0 0 12px var(--glow);
+    pointer-events: none;
+  }
+
+  /* soft light that follows the mouse */
+  .cursor-glow {
+    position: fixed; left: 0; top: 0; width: 560px; height: 560px; margin: -280px 0 0 -280px;
+    border-radius: 50%; pointer-events: none; z-index: 0; opacity: 0;
+    background: radial-gradient(circle, rgba(77,141,255,.17), rgba(77,141,255,.06) 40%, transparent 68%);
+    transition: opacity .6s ease;
+    will-change: transform;
+  }
+  .cursor-glow.on { opacity: 1; }
+
+  /* slow drifting colour clouds behind everything */
+  .orbs { position: absolute; left: 0; right: 0; top: 0; height: 1100px; overflow: hidden; pointer-events: none; z-index: 0; }
+  .orb { position: absolute; border-radius: 50%; will-change: transform; }
+  .o1 { width: 620px; height: 620px; left: 8%;  top: -180px; background: radial-gradient(circle, rgba(77,141,255,.34), transparent 66%);  animation: drift1 16s ease-in-out infinite alternate; }
+  .o2 { width: 540px; height: 540px; right: 4%; top: 120px;  background: radial-gradient(circle, rgba(56,189,248,.20), transparent 66%);  animation: drift2 20s ease-in-out infinite alternate; }
+  .o3 { width: 480px; height: 480px; left: 38%; top: 520px;  background: radial-gradient(circle, rgba(99,102,241,.22), transparent 66%);  animation: drift3 24s ease-in-out infinite alternate; }
+  @keyframes drift1 { to { transform: translate3d(140px, 90px, 0) scale(1.18); } }
+  @keyframes drift2 { to { transform: translate3d(-160px, 70px, 0) scale(.9); } }
+  @keyframes drift3 { to { transform: translate3d(-120px, -90px, 0) scale(1.25); } }
+
+  /* intro: things glide in one after another */
+  @keyframes rise { from { opacity: 0; transform: translate3d(0, 28px, 0) scale(.97); filter: blur(10px); } }
+  .rise { animation: rise 1s var(--ease) backwards; animation-delay: calc(var(--d, 0) * 1ms); }
+
+  h1 .ch { display: inline-block; animation: chIn .9s var(--spring) backwards; animation-delay: calc(.25s + var(--i, 0) * 80ms); transition: transform .35s var(--spring), color .3s ease; cursor: default; }
+  h1 .ch:hover { transform: translateY(-8px) rotate(-4deg); color: var(--accent); }
+  @keyframes chIn { from { opacity: 0; transform: translate3d(0, .7em, 0) rotate(10deg) scale(.6); filter: blur(8px); } }
+  h1#name { text-shadow: 0 0 40px rgba(77,141,255,.35); animation: glowPulse 4s ease-in-out 1.6s infinite; }
+  @keyframes glowPulse { 50% { text-shadow: 0 0 64px rgba(77,141,255,.65); } }
+
+  .tagline {
+    background: linear-gradient(90deg, var(--accent), #9fdcff, var(--accent2), var(--accent));
+    background-size: 250% 100%;
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+    animation: sheen 6s linear infinite;
+  }
+  .tagline.rise { animation: rise 1s var(--ease) .5s backwards, sheen 6s linear infinite; }
+  @keyframes sheen { to { background-position: -250% 0; } }
+
+  .pfp, .pfp-fallback { animation: floaty 6s ease-in-out infinite, pfpGlow 4s ease-in-out infinite; }
+  @keyframes floaty { 50% { transform: translate3d(0, -7px, 0); } }
+  @keyframes pfpGlow { 50% { box-shadow: 0 0 0 3px var(--accent), 0 0 74px rgba(77,141,255,.62); } }
+
+  /* commissions dot that pulses */
+  .dot { display: inline-block; position: relative; width: 10px; height: 10px; margin-right: 9px; vertical-align: middle; border-radius: 50%; background: #38e07b; box-shadow: 0 0 10px #38e07b; }
+  .dot.off { background: #ff5a5a; box-shadow: 0 0 10px #ff5a5a; }
+  .dot::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: inherit; animation: ping 1.9s var(--ease) infinite; }
+  @keyframes ping { from { transform: scale(1); opacity: .75; } to { transform: scale(3.4); opacity: 0; } }
+
+  /* little arrows that move */
+  .arr { display: inline-block; transition: transform .4s var(--spring); }
+  .card:hover .arr { transform: translateX(7px); }
+  .back i { transition: transform .4s var(--spring), background .25s ease; }
+  .back:hover i { transform: translateX(-4px); }
+
+  /* spotlight that follows the mouse inside cards, and a gentle 3D tilt */
+  .fx { position: relative; }
+  .fx::before {
+    content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 3; opacity: 0;
+    background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), rgba(140,180,255,.17), transparent 45%);
+    transition: opacity .4s ease;
+  }
+  .fx:hover::before { opacity: 1; }
+  .tilt {
+    transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translate3d(0, var(--lift, 0px), 0) scale(var(--sc, 1));
+    transition: transform .45s var(--ease), box-shadow .3s ease, border-color .3s ease;
+  }
+  .tilt:hover {
+    --lift: -6px; --sc: 1.015;
+    transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translate3d(0, var(--lift, 0px), 0) scale(var(--sc, 1));
+  }
+
+  /* things fade up as you scroll to them */
+  .reveal {
+    opacity: 0; transform: translate3d(0, 34px, 0) scale(.97); filter: blur(6px);
+    transition: opacity .9s var(--ease), transform .9s var(--ease), filter .9s var(--ease);
+    transition-delay: calc(var(--d, 0) * 1ms);
+  }
+  .reveal.in { opacity: 1; transform: none; filter: none; }
+  .block h2::after { width: 0; transition: width 1s var(--ease) .35s; }
+  .block h2.in::after { width: 46px; }
+
+  /* buttons: magnetic pull + click ripple */
+  .mag {
+    transform: translate3d(var(--tx, 0px), calc(var(--ty, 0px) + var(--lift, 0px)), 0);
+    transition: transform .35s var(--ease), background .25s ease, box-shadow .25s ease, border-color .25s ease, color .25s ease;
+  }
+  .mag:hover {
+    --lift: -2px;
+    transform: translate3d(var(--tx, 0px), calc(var(--ty, 0px) + var(--lift, 0px)), 0);
+  }
+  .rip { position: relative; overflow: hidden; }
+  .ripple {
+    position: absolute; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; pointer-events: none;
+    background: rgba(255,255,255,.45); transform: scale(0); animation: ripple .7s var(--ease) forwards;
+  }
+  @keyframes ripple { to { transform: scale(26); opacity: 0; } }
+
+  /* pictures: shimmer while loading, then fade in */
+  .loading { background: linear-gradient(110deg, #0f1730 30%, #1b2a55 50%, #0f1730 70%) 0 0 / 220% 100%; animation: skel 1.5s linear infinite; }
+  @keyframes skel { to { background-position: -220% 0; } }
+  .cimg img, .vid img { opacity: 0; transition: opacity .7s ease, transform .5s ease; }
+  .cimg img.ready, .vid img.ready { opacity: 1; }
+
+  /* video cards */
+  .vid { transition: transform .45s var(--ease), box-shadow .45s ease, border-color .3s ease; }
+  .vid:hover { transform: translateY(-5px) scale(1.02); border-color: var(--accent); box-shadow: 0 18px 40px rgba(0,0,0,.55), 0 0 28px rgba(77,141,255,.28); }
+
+  /* shine on the discount tag, glow on review pictures */
+  .badge { position: relative; overflow: hidden; }
+  .badge::after {
+    content: ""; position: absolute; inset: 0; transform: translateX(-120%);
+    background: linear-gradient(100deg, transparent 20%, rgba(255,255,255,.55) 50%, transparent 80%);
+    animation: shine 2.8s ease-in-out infinite;
+  }
+  @keyframes shine { 0%, 55% { transform: translateX(-120%); } 100% { transform: translateX(120%); } }
+  .avatar { animation: ring 3.4s ease-in-out infinite; }
+  @keyframes ring { 50% { box-shadow: 0 0 28px var(--glow), 0 0 0 4px rgba(77,141,255,.2); } }
+
+  /* "lite" = effects switched off (fancyEffects: false, or the visitor asked for less motion) */
+  .lite .orbs, .lite .cursor-glow, .lite .progress { display: none; }
+  .lite .rise, .lite h1 .ch, .lite h1#name, .lite .pfp, .lite .pfp-fallback, .lite .badge::after, .lite .avatar, .lite .dot::after, .lite .tagline, .lite .tagline.rise { animation: none; }
+  .calm .orb, .calm .tagline { animation: none; }
+
   @media (max-width: 640px) {
     .grid { grid-template-columns: 1fr; }
     .panel { padding: 20px; }
@@ -422,23 +560,27 @@
 </head>
 <body>
 
+<div class="progress" id="progress" aria-hidden="true"></div>
+<div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
+
 <div class="top">
   <div class="logos" id="logos" aria-hidden="true"></div>
+  <div class="orbs" aria-hidden="true"><i class="orb o1"></i><i class="orb o2"></i><i class="orb o3"></i></div>
 
   <!-- ===== HOME ===== -->
   <div id="home">
     <section class="hero">
       <div class="profile">
-        <div id="pfpBox"></div>
+        <div id="pfpBox" class="rise" style="--d:0"></div>
         <h1 id="name"></h1>
-        <p class="tagline" id="tagline"></p>
-        <p class="bio" id="bio"></p>
-        <div class="status" id="status"></div><br>
-        <div class="contact">
+        <p class="tagline rise" id="tagline" style="--d:500"></p>
+        <p class="bio rise" id="bio" style="--d:620"></p>
+        <div class="status rise" id="status" style="--d:740"></div><br>
+        <div class="contact rise" style="--d:860">
           <span id="contactText"></span>
-          <button class="copy" id="copyBtn" type="button">Copy</button>
+          <button class="copy mag rip" id="copyBtn" type="button">Copy</button>
         </div>
-        <div class="socials" id="socials"></div>
+        <div class="socials rise" id="socials" style="--d:980"></div>
       </div>
     </section>
 
@@ -475,9 +617,9 @@
   <div id="stylePage" hidden>
     <section class="hero small">
       <div class="style-head">
-        <a class="back" href="#"><i>&larr;</i> All styles</a>
-        <h1 id="sTitle"></h1>
-        <p class="bio" id="sBlurb"></p>
+        <a class="back mag rip rise" href="#" style="--d:0"><i>&larr;</i> All styles</a>
+        <h1 id="sTitle" class="rise" style="--d:120"></h1>
+        <p class="bio rise" id="sBlurb" style="--d:240"></p>
       </div>
     </section>
     <main class="stage">
@@ -517,6 +659,7 @@ const CONFIG = {
 
   logoSlideSeconds: 45,                           // how fast the YouTube logos slide down (higher = slower)
   respectReducedMotion: false,                    // true = stop the moving stuff for people who turned animations off
+  fancyEffects: true,                             // false = switch off the extra effects (glow, tilt, reveals...) if the site ever feels slow
 
   /* RECENT WORK strip on the home page (it scrolls by itself, stops when you hover it,
      and you can drag it with the mouse or swipe it on a phone).
@@ -614,13 +757,34 @@ function make(tag, cls, text) {
 }
 const reduce = CONFIG.respectReducedMotion &&
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const FX = CONFIG.fancyEffects !== false && !reduce;                       // master switch for the fancy effects
+const canHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;   // mouse (not a phone)
+if (!FX) document.body.classList.add("lite");
+
+/* things fade up when you scroll to them. clean = hand the element back to its normal style afterwards */
+function reveal(el, delay, opts) {
+  if (!FX || !el) return;
+  el.classList.add("reveal");
+  el.style.setProperty("--d", delay || 0);
+  whenVisible(el, () => {
+    el.classList.add("in");
+    if (opts && opts.clean) setTimeout(() => el.classList.remove("reveal", "in"), 1400 + (delay || 0));
+  }, 0.12);
+}
 
 /* ---------- profile ---------- */
-$("name").textContent = CONFIG.name;
+$("name").setAttribute("aria-label", CONFIG.name);
+[...CONFIG.name].forEach((ch, i) => {                       // letters pop in one by one
+  const s = make("span", "ch", ch === " " ? "\u00A0" : ch);
+  s.style.setProperty("--i", i);
+  s.setAttribute("aria-hidden", "true");
+  $("name").appendChild(s);
+});
 $("tagline").textContent = CONFIG.tagline;
 $("bio").textContent = CONFIG.bio;
 const isOpen = CONFIG.commissions !== "closed";
-$("status").textContent = isOpen ? "\uD83D\uDFE2 Commissions open" : "\uD83D\uDD34 Commissions closed";
+$("status").innerHTML = '<span class="dot' + (isOpen ? "" : " off") + '"></span><span></span>';
+$("status").lastChild.textContent = isOpen ? "Commissions open" : "Commissions closed";
 $("contactText").innerHTML = (isOpen ? "DM for commissions: " : "Contact: ") + "<b></b>";
 $("contactText").querySelector("b").textContent = CONFIG.discord;
 $("foot").textContent = "\u00A9 " + new Date().getFullYear() + " " + CONFIG.name;
@@ -662,7 +826,7 @@ function buildSocials(box, solid) {
         setTimeout(() => { el.textContent = so.name; }, 1800);
       });
     }
-    el.className = "chip" + (solid ? " solid" : "");
+    el.className = "chip mag rip" + (solid ? " solid" : "");
     el.textContent = so.name;
     box.appendChild(el);
   });
@@ -674,13 +838,14 @@ $("logos").style.setProperty("--slide", CONFIG.logoSlideSeconds + "s");
 if (reduce) document.body.classList.add("calm");
 
 /* ---------- home: the style boxes ---------- */
-CONFIG.styles.forEach((st) => {
-  const a = make("a", "card");
+CONFIG.styles.forEach((st, i) => {
+  const a = make("a", "card fx tilt");
   a.href = "#" + st.id;
   a.setAttribute("aria-label", st.title);
 
   const box = make("div", "cimg");
   function placeholder() {
+    box.classList.remove("loading");
     box.innerHTML = "";
     const ph = make("div", "ph");
     ph.appendChild(make("b", "", st.title));
@@ -688,9 +853,11 @@ CONFIG.styles.forEach((st) => {
     box.appendChild(ph);
   }
   if (st.image) {
+    box.classList.add("loading");
     const im = new Image();
     im.alt = "";
     im.onerror = placeholder;
+    im.onload = () => { im.classList.add("ready"); box.classList.remove("loading"); };
     im.src = st.image;
     box.appendChild(im);
   } else {
@@ -701,10 +868,11 @@ CONFIG.styles.forEach((st) => {
   const bar = make("div", "cbar");
   bar.appendChild(make("b", "", st.title));
   const go = make("span");
-  go.innerHTML = "View work &rarr;";
+  go.innerHTML = 'View work <span class="arr">&rarr;</span>';
   bar.appendChild(go);
   a.appendChild(bar);
   $("grid").appendChild(a);
+  reveal(a, i * 130, { clean: true });
 });
 
 /* ---------- videos ---------- */
@@ -723,11 +891,12 @@ function makeVideo(item, opts) {
   const id = videoId(item.url);
   if (!id) return null;
   const v = make("div", "vid" + (opts.big ? " big" : "") + (opts.fill ? " fill" : ""));
+  v.classList.add("loading");
   v.tabIndex = opts.dup ? -1 : 0;
   v.setAttribute("role", "button");
   v.setAttribute("aria-label", "Play " + (item.title || "video"));
   v.innerHTML =
-    '<img alt="" loading="lazy" src="https://img.youtube.com/vi/' + id + '/hqdefault.jpg">' +
+    '<img alt="" loading="lazy" onload="this.classList.add(\'ready\');this.parentNode.classList.remove(\'loading\')" src="https://img.youtube.com/vi/' + id + '/hqdefault.jpg">' +
     '<span class="play"></span>' +
     (item.tag ? '<span class="tag"></span>' : "") +
     (item.title ? '<div class="cap"></div>' : "");
@@ -745,6 +914,7 @@ function makeVideo(item, opts) {
     v.innerHTML = "";
     v.appendChild(f);
     v.dataset.playing = "1";
+    v.classList.remove("loading");
     v.removeAttribute("role");
   };
   v.addEventListener("click", () => { if (!v.dataset.playing) start(); });
@@ -754,11 +924,12 @@ function makeVideo(item, opts) {
   return v;
 }
 
-/* ---------- a strip that scrolls by itself (pauses on hover, drag to move it) ---------- */
+/* ---------- a strip that scrolls by itself (eases to a stop on hover, drag it, flick it) ---------- */
 function startMarquee(viewport, track, speed, dir) {
   if (reduce) { viewport.classList.add("static"); return; }
-  let offset = null, last = null, hover = false, timer = null;
-  let dragging = false, moved = false, startX = 0, startOff = 0;
+  let offset = null, last = null, vel = 1, inertia = 0;
+  let hover = false, timer = null;
+  let dragging = false, moved = false, startX = 0, startOff = 0, lastX = 0, lastT = 0, dragV = 0;
 
   viewport.style.touchAction = "pan-y";
   viewport.addEventListener("mouseenter", () => { hover = true; });
@@ -770,15 +941,27 @@ function startMarquee(viewport, track, speed, dir) {
   /* drag it with the mouse or a finger */
   viewport.addEventListener("pointerdown", (e) => {
     if (e.pointerType === "mouse" && e.button !== 0) return;
-    dragging = true; moved = false; startX = e.clientX; startOff = offset || 0;
+    dragging = true; moved = false; dragV = 0; inertia = 0;
+    startX = lastX = e.clientX; lastT = performance.now(); startOff = offset || 0;
   });
   window.addEventListener("pointermove", (e) => {
     if (!dragging) return;
     const dx = e.clientX - startX;
     if (Math.abs(dx) > 6) { moved = true; viewport.classList.add("dragging"); }
-    if (moved) offset = startOff - dx;
+    if (moved) {
+      offset = startOff - dx;
+      const now = performance.now(), dtm = Math.max(now - lastT, 1);
+      dragV = dragV * 0.7 + ((e.clientX - lastX) / dtm * 1000) * 0.3;   // how fast the finger is moving
+      lastX = e.clientX; lastT = now;
+    }
   });
-  const endDrag = () => { dragging = false; viewport.classList.remove("dragging"); };
+  const endDrag = () => {
+    if (dragging && moved && performance.now() - lastT < 160) {
+      inertia = Math.max(-2600, Math.min(2600, -dragV));                 // keep gliding after a flick
+    }
+    dragging = false;
+    viewport.classList.remove("dragging");
+  };
   window.addEventListener("pointerup", endDrag);
   window.addEventListener("pointercancel", endDrag);
   viewport.addEventListener("click", (e) => {
@@ -801,7 +984,13 @@ function startMarquee(viewport, track, speed, dir) {
     const half = track.scrollWidth / 2;
     if (half > 0) {
       if (offset === null) offset = dir > 0 ? 0 : half;
-      if (!hover && !dragging && !track.classList.contains("hold")) offset += dir * speed * dt;
+      const target = (hover || dragging || track.classList.contains("hold")) ? 0 : 1;
+      vel += (target - vel) * (1 - Math.exp(-dt * 5));          // slows down smoothly, speeds up smoothly
+      if (target === 0 && vel < 0.004) vel = 0;
+      if (!dragging) {
+        offset += dir * speed * vel * dt + inertia * dt;
+        inertia *= Math.exp(-dt * 3);
+      }
       if (offset >= half) offset -= half;
       if (offset < 0) offset += half;
       track.style.transform = "translate3d(" + (-offset) + "px,0,0)";
@@ -828,7 +1017,7 @@ function videoStrip(list, speed, wrapEl) {
   const viewport = make("div", "viewport");
   const track = make("div", "track");
   viewport.appendChild(track);
-  const resume = make("button", "resume", "Resume scrolling");
+  const resume = make("button", "resume mag rip", "Resume scrolling");
   resume.type = "button";
   const row = make("div", "resume-row");
   row.appendChild(resume);
@@ -894,7 +1083,7 @@ function starsRow(n) {
 }
 
 function reviewCard(r) {
-  const c = make("div", "review");
+  const c = make("div", "review fx tilt");
   const hasStars = typeof r.stars === "number";
   if (r.image) {
     const im = new Image();
@@ -978,13 +1167,17 @@ function whenVisible(el, fn, threshold) {
       c.style.setProperty("--i", i);
       still.appendChild(c);
     });
-    whenVisible(still, () => still.classList.add("in"), 0.25);
+    whenVisible(still, () => {
+      still.classList.add("in");
+      // after they have faded in, hand them back so the hover tilt works
+      setTimeout(() => still.querySelectorAll(".pop").forEach((c) => c.classList.remove("pop")), 1500 + list.length * 160);
+    }, 0.25);
   }
 })();
 
 /* ---------- one style page ---------- */
 function panel(title) {
-  const p = make("section", "panel");
+  const p = make("section", "panel fx");
   if (title) p.appendChild(make("h2", "", title));
   return p;
 }
@@ -1027,13 +1220,14 @@ function showStyle(st) {
   if (st.prices && st.prices.length) {
     const p = panel("Prices");
     const g = make("div", "prices");
-    st.prices.forEach((pr) => {
-      const c = make("div", "price");
+    st.prices.forEach((pr, idx) => {
+      const c = make("div", "price fx tilt");
       if (pr.badge) c.appendChild(make("div", "badge", pr.badge));
       c.appendChild(make("h3", "", pr.name || ""));
       c.appendChild(make("div", "amt", pr.price || ""));
       if (pr.note) c.appendChild(make("p", "", pr.note));
       g.appendChild(c);
+      reveal(c, 200 + idx * 120, { clean: true });
     });
     p.appendChild(g);
     box.appendChild(p);
@@ -1053,6 +1247,7 @@ function showStyle(st) {
   buildSocials(row, true);
   order.appendChild(row);
   box.appendChild(order);
+  [...box.children].forEach((pn, i) => reveal(pn, i * 110, { clean: true }));   // panels glide in one by one
 }
 
 function showHome() {
@@ -1066,10 +1261,97 @@ function route() {
   const id = decodeURIComponent(location.hash.replace(/^#\/?/, ""));
   const st = CONFIG.styles.find((s) => s.id === id);
   if (st) showStyle(st); else showHome();
-  window.scrollTo(0, 0);
+  window.scrollTo({ top: 0, behavior: "instant" });
 }
 window.addEventListener("hashchange", route);
 route();
+
+/* ---------- scroll reveals ---------- */
+document.querySelectorAll(".block > h2").forEach((h) => reveal(h, 0));
+reveal($("recentWrap"), 80);
+reveal($("reviewView"), 80);
+reveal($("foot"), 0);
+
+/* ---------- extra motion: scroll bar, mouse glow, background parallax ---------- */
+(function motion() {
+  if (!FX) return;
+  const bar = $("progress"), glow = $("cursorGlow"), logos = $("logos");
+  let tx = innerWidth / 2, ty = innerHeight / 2, gx = tx, gy = ty, px = 0, py = 0;
+  if (canHover) {
+    window.addEventListener("pointermove", (e) => {
+      if (e.pointerType === "touch") return;
+      tx = e.clientX; ty = e.clientY;
+      glow.classList.add("on");
+    }, { passive: true });
+    document.documentElement.addEventListener("mouseleave", () => glow.classList.remove("on"));
+  }
+  function loop() {
+    const h = document.documentElement.scrollHeight - innerHeight;
+    const p = h > 0 ? Math.min(Math.max(scrollY / h, 0), 1) : 0;
+    bar.style.transform = "scaleX(" + p + ")";
+    if (canHover) {
+      gx += (tx - gx) * 0.14; gy += (ty - gy) * 0.14;                   // the glow trails the mouse smoothly
+      glow.style.transform = "translate3d(" + gx + "px," + gy + "px,0)";
+      px += ((tx / innerWidth - 0.5) - px) * 0.06;
+      py += ((ty / innerHeight - 0.5) - py) * 0.06;
+      logos.style.translate = (-px * 26) + "px " + (-py * 18) + "px";   // the logos drift the other way
+    }
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+})();
+
+/* ---------- card spotlight, tilt, magnetic buttons, click ripple ---------- */
+(function interactions() {
+  document.addEventListener("click", (e) => {
+    const r = e.target.closest && e.target.closest(".rip");
+    if (!r || !FX) return;
+    const b = r.getBoundingClientRect();
+    const s = make("span", "ripple");
+    s.style.left = (e.clientX - b.left) + "px";
+    s.style.top = (e.clientY - b.top) + "px";
+    r.appendChild(s);
+    setTimeout(() => s.remove(), 750);
+  });
+  if (!FX || !canHover) return;
+
+  let curFx = null, curMag = null, ev = null, queued = false;
+  function apply() {
+    queued = false;
+    if (!ev) return;
+    const t = ev.target && ev.target.closest ? ev.target : document.body;
+    const fx = t.closest(".fx");
+    if (curFx && curFx !== fx) { curFx.style.setProperty("--rx", "0deg"); curFx.style.setProperty("--ry", "0deg"); }
+    curFx = fx;
+    if (fx) {
+      const b = fx.getBoundingClientRect(), x = ev.clientX - b.left, y = ev.clientY - b.top;
+      fx.style.setProperty("--mx", x + "px");
+      fx.style.setProperty("--my", y + "px");
+      if (fx.classList.contains("tilt")) {
+        fx.style.setProperty("--ry", ((x / b.width - 0.5) * 9) + "deg");
+        fx.style.setProperty("--rx", (-(y / b.height - 0.5) * 7) + "deg");
+      }
+    }
+    const mg = t.closest(".mag");
+    if (curMag && curMag !== mg) { curMag.style.setProperty("--tx", "0px"); curMag.style.setProperty("--ty", "0px"); }
+    curMag = mg;
+    if (mg) {
+      const b = mg.getBoundingClientRect();
+      mg.style.setProperty("--tx", ((ev.clientX - (b.left + b.width / 2)) * 0.22) + "px");
+      mg.style.setProperty("--ty", ((ev.clientY - (b.top + b.height / 2)) * 0.3) + "px");
+    }
+  }
+  document.addEventListener("pointermove", (e) => {
+    if (e.pointerType === "touch") return;
+    ev = e;
+    if (!queued) { queued = true; requestAnimationFrame(apply); }
+  }, { passive: true });
+  document.documentElement.addEventListener("mouseleave", () => {
+    ev = { target: document.body, clientX: 0, clientY: 0 };
+    apply();
+  });
+})();
+
 </script>
 </body>
 </html>
