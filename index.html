@@ -364,7 +364,13 @@
   .hero.small h1 { margin-top: 26px; font-size: clamp(2rem, 6vw, 3rem); line-height: 1.1; }
   .hero.small .bio { margin-top: 12px; }
 
-  .panels { max-width: 960px; margin: 0 auto; padding: 0 20px; display: grid; gap: 24px; }
+  .panels {
+    max-width: 960px; margin: 0 auto; padding: 0 20px;
+    display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px;   /* keeps wide strips from stretching the page */
+  }
+  .panel { min-width: 0; }
+  .panel .viewport { padding-bottom: 6px; }
+  .panel .resume-row { min-height: 0; }
   .panel {
     background: var(--panel);
     border-radius: 22px;
