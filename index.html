@@ -552,6 +552,37 @@
   .lite .rise, .lite h1 .ch, .lite h1#name, .lite .pfp, .lite .pfp-fallback, .lite .badge::after, .lite .avatar, .lite .dot::after, .lite .tagline, .lite .tagline.rise { animation: none; }
   .calm .orb, .calm .tagline { animation: none; }
 
+  /* ---------- main (featured) style on top, the others below ---------- */
+  .grid { grid-template-columns: repeat(3, 1fr); }
+  .card.featured {
+    grid-column: 1 / -1;
+    display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+    border-color: rgba(77,141,255,.55);
+    box-shadow: 0 0 0 1px rgba(77,141,255,.35), 0 22px 54px rgba(77,141,255,.22), 0 14px 34px rgba(0,0,0,.5);
+  }
+  .cinfo { padding: 28px; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 12px; text-align: left; }
+  .cinfo .badge { margin: 0; }
+  .cinfo h3 { font: 700 1.75rem/1.15 "Chakra Petch", sans-serif; }
+  .cinfo p { color: var(--mute); }
+  .cinfo .go {
+    display: inline-block; margin-top: 6px; padding: 11px 24px; border-radius: 999px;
+    background: var(--accent2); color: #fff; font-weight: 700;
+    transition: background .25s ease, box-shadow .25s ease;
+  }
+  .card.featured:hover .go { background: var(--accent); box-shadow: 0 8px 24px var(--glow); }
+  .more {
+    grid-column: 1 / -1; display: flex; align-items: center; gap: 16px;
+    margin-top: 8px; color: var(--mute); font: 600 1rem "Chakra Petch", sans-serif;
+  }
+  .more::before, .more::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  .grid .card:not(.featured) .cbar { flex-wrap: wrap; gap: 4px 12px; padding: 12px 14px; }
+  .grid .card:not(.featured) .cbar b { font-size: .95rem; }
+  @media (max-width: 860px) {
+    .grid { grid-template-columns: repeat(2, 1fr); }
+    .card.featured { grid-template-columns: 1fr; }
+    .cinfo { padding: 22px; }
+  }
+
   @media (max-width: 640px) {
     .grid { grid-template-columns: 1fr; }
     .panel { padding: 20px; }
@@ -701,6 +732,7 @@ const CONFIG = {
   reviewSpeed: 40,
 
   /* The editing style boxes on the home page. Each one opens its own page.
+     featured  : true = this style is shown big at the top as your main style (only use it on one)
      id        : used in the link (keep it short, no spaces)
      image     : picture file for the box (upload it to your repo). Leave "" for a plain box
      showreel  : one big video at the top of the page (or null)
@@ -711,15 +743,16 @@ const CONFIG = {
       id: "gtag",
       title: "Gorilla Tag editing style",
       image: "gtag.jpg",
-      blurb: "Fast, clean Gorilla Tag edits. Check out my showreel, recent work and prices below.",
+      blurb: "Coming soon.",   // old text: "Fast, clean Gorilla Tag edits. Check out my showreel, recent work and prices below.",
       showreel: null, // { url: "https://youtu.be/_abKATi9mWo", title: "Showreel" },
       works: [
         // { url: "https://www.youtube.com/watch?v=wwkGmlEFaPw", title: "30s Client Video" }
       ],
-      prices: PRICES
+      prices: [],   // put PRICES here when this page is ready
     },
     {
       id: "roblox",
+      featured: true,                             // your main style: shown big at the top
       title: "Roblox editing style",
       image: "roblox.jpg",
       blurb: "Clean, fast Roblox edits. Check out my recent work and prices below.",
@@ -736,12 +769,12 @@ const CONFIG = {
       id: "minecraft",
       title: "Minecraft editing style",
       image: "minecraft.jpg",
-      blurb: "Clean, fast Minecraft edits. Check out my recent work and prices below.",
+      blurb: "Coming soon.",   // old text: "Clean, fast Minecraft edits. Check out my recent work and prices below.",
       showreel: null,
       works: [
         // { url: "https://www.youtube.com/watch?v=XXXXXXXXXXX", title: "My Minecraft edit" }
       ],
-      prices: PRICES
+      prices: [],   // put PRICES here when this page is ready
     },
     { id: "style4", title: "Editing style 4", image: "", blurb: "Coming soon.", showreel: null, works: [], prices: [] }
   ]
@@ -838,8 +871,9 @@ $("logos").style.setProperty("--slide", CONFIG.logoSlideSeconds + "s");
 if (reduce) document.body.classList.add("calm");
 
 /* ---------- home: the style boxes ---------- */
-CONFIG.styles.forEach((st, i) => {
-  const a = make("a", "card fx tilt");
+const orderedStyles = CONFIG.styles.slice().sort((x, y) => (y.featured ? 1 : 0) - (x.featured ? 1 : 0));   // main style first
+orderedStyles.forEach((st, i) => {
+  const a = make("a", "card fx tilt" + (st.featured ? " featured" : ""));
   a.href = "#" + st.id;
   a.setAttribute("aria-label", st.title);
 
@@ -865,14 +899,30 @@ CONFIG.styles.forEach((st, i) => {
   }
   a.appendChild(box);
 
-  const bar = make("div", "cbar");
-  bar.appendChild(make("b", "", st.title));
-  const go = make("span");
-  go.innerHTML = 'View work <span class="arr">&rarr;</span>';
-  bar.appendChild(go);
-  a.appendChild(bar);
+  if (st.featured) {
+    const info = make("div", "cinfo");
+    info.appendChild(make("span", "badge", "Main style"));
+    info.appendChild(make("h3", "", st.title));
+    if (st.blurb) info.appendChild(make("p", "", st.blurb));
+    const goBtn = make("span", "go");
+    goBtn.innerHTML = 'View work <span class="arr">&rarr;</span>';
+    info.appendChild(goBtn);
+    a.appendChild(info);
+  } else {
+    const bar = make("div", "cbar");
+    bar.appendChild(make("b", "", st.title));
+    const go = make("span");
+    go.innerHTML = 'View work <span class="arr">&rarr;</span>';
+    bar.appendChild(go);
+    a.appendChild(bar);
+  }
   $("grid").appendChild(a);
   reveal(a, i * 130, { clean: true });
+  if (st.featured && orderedStyles.length > 1) {
+    const more = make("h3", "more", "More editing styles");
+    $("grid").appendChild(more);
+    reveal(more, i * 130 + 120);
+  }
 });
 
 /* ---------- videos ---------- */
