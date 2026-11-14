@@ -1683,16 +1683,19 @@ reveal($("foot"), 0);
 <script>
 /* ===== NAV + STORE (single paste) ===== */
 const STORE = [
-  { name: "Presets Pack", price: "$10", badge: "Premiere Pro", image: "presets.png",
-    desc: "Presets and more. 25+ assets for your edits.", link: "" },
-  { name: "SFX Pack", price: "$7", badge: "Sound effects", image: "sfx.png",
-    desc: "25+ sound effects.", link: "" }
-];   // "link": put a Gumroad/Payhip link here for checkout. Empty = Buy opens your Discord.
+  { name: "Premiere Pro\npreset pack", price: "$10", image: "presets.png",
+    desc: "Presets and more. 25+ assets for editing in Premiere Pro.", link: "" },
+  { name: "Sound\neffect pack", price: "$7", image: "sfx.png",
+    desc: "25+ sound effects for your editing.", link: "" }
+];   // "link": put a Gumroad/Payhip link to sell with checkout. Empty = Buy now opens your Discord.
 
 (function () {
   const DISCORD_URL = ((CONFIG.socials || []).find((s) => /discord/i.test(s.name)) || {}).url || "#";
 
-  /* ---- styles ---- */
+  /* ---- fonts + styles ---- */
+  const fl = document.createElement("link");
+  fl.rel = "stylesheet"; fl.href = "https://fonts.googleapis.com/css2?family=Archivo+Black&display=swap";
+  document.head.appendChild(fl);
   const css = document.createElement("style");
   css.textContent = `
   body{padding-top:72px}
@@ -1707,19 +1710,28 @@ const STORE = [
   .nav-cta{display:inline-flex;align-items:center;padding:10px 20px;border-radius:12px;background:var(--accent2);color:#fff;text-decoration:none;white-space:nowrap;font:700 .92rem "Manrope",sans-serif;transition:background .2s ease,box-shadow .2s ease}
   .nav-cta:hover{background:var(--accent);box-shadow:0 6px 20px var(--glow)}
   @media(max-width:700px){.nav-brand b{display:none}.nav-links a{padding:8px 9px;font-size:.88rem}.nav-cta{padding:9px 14px}}
-  .store-grid{max-width:820px;margin:0 auto;padding:0 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px}
-  .product{display:flex;flex-direction:column;border-radius:22px;overflow:hidden;background:var(--panel);border:1px solid var(--line);box-shadow:0 14px 34px rgba(0,0,0,.5);transition:border-color .25s ease,box-shadow .25s ease}
-  .product:hover{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 20px 44px var(--glow)}
-  .product .pimg{aspect-ratio:1/1;background:var(--bg2);overflow:hidden}
-  .product .pimg img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s ease}
-  .product:hover .pimg img{transform:scale(1.05)}
-  .pbody{padding:22px;display:flex;flex-direction:column;gap:8px;flex:1}
-  .pbody .badge{align-self:flex-start;margin:0}
-  .pbody h3{font:700 1.4rem "Chakra Petch",sans-serif}
-  .pbody .pdesc{color:var(--mute)}
-  .pbody .pprice{font:700 2.4rem/1.1 "Chakra Petch",sans-serif;color:var(--accent)}
-  .pbody .q-btn{margin-top:auto}
-  .store-note{text-align:center;color:var(--mute);font-size:.88rem;margin-top:22px;padding:0 20px}`;
+
+  /* store (matches the reference) */
+  .st-hero{text-align:center;padding:40px 20px 10px}
+  .st-title{font-family:"Archivo Black","Arial Black",Impact,sans-serif;color:#d9d6f7;text-transform:uppercase;letter-spacing:-.045em;line-height:.9;text-shadow:0 6px 30px rgba(120,110,255,.28),0 2px 0 rgba(255,255,255,.12)}
+  .st-title .t1{display:block;font-size:clamp(3rem,11vw,6.4rem)}
+  .st-title .t2{display:block;font-size:clamp(4.4rem,17vw,10.2rem);margin-top:-.02em}
+  .st-sub{margin-top:26px;color:#9b98b8;font-size:1.02rem}
+  .st-wrap{max-width:1016px;margin:0 auto;padding:46px 20px 80px}
+  .st-wrap h2{font:500 1.35rem "Manrope",sans-serif;color:#fff;margin-bottom:20px;text-align:left}
+  .st-wrap h2::after{display:none}
+  .st-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:24px}
+  .st-card{display:flex;flex-direction:column;gap:18px;padding:26px 28px 28px;border-radius:22px;background:rgba(17,18,30,.92);border:1px solid rgba(255,255,255,.07);transition:border-color .25s ease,transform .3s ease,box-shadow .3s ease}
+  .st-card:hover{border-color:rgba(130,120,255,.5);transform:translateY(-4px);box-shadow:0 18px 40px rgba(0,0,0,.45),0 0 28px rgba(110,100,255,.15)}
+  .st-head{display:flex;align-items:center;gap:18px}
+  .st-head img{width:76px;height:76px;border-radius:20px;object-fit:cover;flex:none;box-shadow:0 8px 22px rgba(0,0,0,.45)}
+  .st-head h3{font:500 1.4rem/1.2 "Manrope",sans-serif;color:#fff;white-space:pre-line}
+  .st-desc{color:#8e8ba8;font-size:.97rem;line-height:1.6;min-height:3.2em}
+  .st-price{font-family:"Archivo Black","Arial Black",sans-serif;font-size:2.8rem;line-height:1;color:#fff;letter-spacing:-.02em}
+  .st-price small{font-size:.5em;letter-spacing:0}
+  .st-buy{display:block;text-align:center;padding:14px 18px;border-radius:12px;background:#5b5bde;color:#fff;text-decoration:none;font:600 .95rem "Manrope",sans-serif;box-shadow:inset 0 1px 0 rgba(255,255,255,.18);transition:background .2s ease,box-shadow .2s ease}
+  .st-buy:hover{background:#6c6cf0;box-shadow:0 8px 24px rgba(91,91,222,.45)}
+  .st-note{margin-top:22px;color:#7b7897;font-size:.85rem}`;
   document.head.appendChild(css);
 
   /* ---- nav ---- */
@@ -1743,30 +1755,33 @@ const STORE = [
 
   /* ---- store page ---- */
   const sp = make("div"); sp.id = "storePage"; sp.hidden = true;
-  sp.innerHTML = '<section class="hero small"><div class="style-head"><h1>Store</h1>' +
-    '<p class="bio">Presets and sound effects, ready to drop into your edits.</p></div></section>' +
-    '<main class="stage"><div class="store-grid" id="storeGrid"></div>' +
-    '<p class="store-note">Buying through Discord: click Buy, paste the message, and I\'ll send it over.</p></main>';
+  sp.innerHTML = '<section class="st-hero"><h1 class="st-title"><span class="t1">Editing</span><span class="t2">Store</span></h1>' +
+    '<p class="st-sub">Products designed to improve your editing.</p></section>' +
+    '<div class="st-wrap"><h2>Launch store</h2><div class="st-grid" id="storeGrid"></div>' +
+    '<p class="st-note">Buying through Discord: click Buy now, paste the message, and I\'ll send it over.</p></div>';
   document.querySelector(".top").appendChild(sp);
 
   STORE.forEach((it) => {
-    const c = make("div", "product fx");
-    const im = make("div", "pimg"), pic = new Image(); pic.alt = it.name; pic.src = it.image; im.appendChild(pic);
-    const b = make("div", "pbody");
-    if (it.badge) b.appendChild(make("span", "badge", it.badge));
-    b.appendChild(make("h3", "", it.name));
-    b.appendChild(make("p", "pdesc", it.desc));
-    b.appendChild(make("div", "pprice", it.price));
-    const buy = make("a", "q-btn mag rip", "Buy " + it.name);
+    const c = make("div", "st-card");
+    const head = make("div", "st-head"), pic = new Image(); pic.alt = ""; pic.src = it.image;
+    head.appendChild(pic); head.appendChild(make("h3", "", it.name));
+    c.appendChild(head);
+    c.appendChild(make("p", "st-desc", it.desc));
+    const pr = make("div", "st-price"), parts = String(it.price).split(".");
+    pr.appendChild(document.createTextNode(parts[0]));
+    if (parts[1]) pr.appendChild(make("small", "", "." + parts[1]));
+    c.appendChild(pr);
+    const flat = it.name.replace(/\n/g, " ");
+    const buy = make("a", "st-buy", "Buy now");
     buy.href = it.link || DISCORD_URL; buy.target = "_blank"; buy.rel = "noopener noreferrer";
     if (!it.link) buy.addEventListener("click", () => {
       try {
-        navigator.clipboard.writeText("Hi " + CONFIG.name + "! I'd like to buy the " + it.name + " (" + it.price + ").");
+        navigator.clipboard.writeText("Hi " + CONFIG.name + "! I'd like to buy the " + flat + " (" + it.price + ").");
         buy.textContent = "Copied! Paste it in Discord";
       } catch (e) {}
-      setTimeout(() => { buy.textContent = "Buy " + it.name; }, 2400);
+      setTimeout(() => { buy.textContent = "Buy now"; }, 2400);
     });
-    b.appendChild(buy); c.appendChild(im); c.appendChild(b);
+    c.appendChild(buy);
     $("storeGrid").appendChild(c);
   });
 
