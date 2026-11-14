@@ -1679,3 +1679,114 @@ reveal($("foot"), 0);
 </script>
 </body>
 </html>
+
+<script>
+/* ===== NAV + STORE (single paste) ===== */
+const STORE = [
+  { name: "Presets Pack", price: "$10", badge: "Premiere Pro", image: "presets.png",
+    desc: "Presets and more. 25+ assets for your edits.", link: "" },
+  { name: "SFX Pack", price: "$7", badge: "Sound effects", image: "sfx.png",
+    desc: "25+ sound effects.", link: "" }
+];   // "link": put a Gumroad/Payhip link here for checkout. Empty = Buy opens your Discord.
+
+(function () {
+  const DISCORD_URL = ((CONFIG.socials || []).find((s) => /discord/i.test(s.name)) || {}).url || "#";
+
+  /* ---- styles ---- */
+  const css = document.createElement("style");
+  css.textContent = `
+  body{padding-top:72px}
+  .nav{position:fixed;top:12px;left:50%;transform:translateX(-50%);width:min(1040px,calc(100% - 24px));z-index:70;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:10px 12px 10px 14px;border-radius:18px;background:rgba(10,16,34,.78);border:1px solid var(--line);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 12px 34px rgba(0,0,0,.5)}
+  .nav-brand{display:flex;align-items:center;gap:12px;color:var(--text);text-decoration:none}
+  .nav-brand img,.nav-brand .nb-fb{width:40px;height:40px;border-radius:12px;object-fit:cover;border:1px solid var(--line);background:var(--panel2);display:grid;place-items:center;color:var(--accent);font:700 1.2rem "Chakra Petch",sans-serif}
+  .nav-brand b{font:700 1.1rem "Chakra Petch",sans-serif;white-space:nowrap}
+  .nav-links{display:flex;gap:4px;margin-left:auto;margin-right:8px}
+  .nav-links a{position:relative;padding:8px 14px;color:var(--mute);text-decoration:none;font:600 .95rem "Manrope",sans-serif;transition:color .2s ease}
+  .nav-links a:hover,.nav-links a.on{color:#fff}
+  .nav-links a.on::after{content:"";position:absolute;left:14px;right:14px;bottom:2px;height:2px;border-radius:2px;background:var(--accent);box-shadow:0 0 10px var(--glow)}
+  .nav-cta{display:inline-flex;align-items:center;padding:10px 20px;border-radius:12px;background:var(--accent2);color:#fff;text-decoration:none;white-space:nowrap;font:700 .92rem "Manrope",sans-serif;transition:background .2s ease,box-shadow .2s ease}
+  .nav-cta:hover{background:var(--accent);box-shadow:0 6px 20px var(--glow)}
+  @media(max-width:700px){.nav-brand b{display:none}.nav-links a{padding:8px 9px;font-size:.88rem}.nav-cta{padding:9px 14px}}
+  .store-grid{max-width:820px;margin:0 auto;padding:0 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px}
+  .product{display:flex;flex-direction:column;border-radius:22px;overflow:hidden;background:var(--panel);border:1px solid var(--line);box-shadow:0 14px 34px rgba(0,0,0,.5);transition:border-color .25s ease,box-shadow .25s ease}
+  .product:hover{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 20px 44px var(--glow)}
+  .product .pimg{aspect-ratio:1/1;background:var(--bg2);overflow:hidden}
+  .product .pimg img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s ease}
+  .product:hover .pimg img{transform:scale(1.05)}
+  .pbody{padding:22px;display:flex;flex-direction:column;gap:8px;flex:1}
+  .pbody .badge{align-self:flex-start;margin:0}
+  .pbody h3{font:700 1.4rem "Chakra Petch",sans-serif}
+  .pbody .pdesc{color:var(--mute)}
+  .pbody .pprice{font:700 2.4rem/1.1 "Chakra Petch",sans-serif;color:var(--accent)}
+  .pbody .q-btn{margin-top:auto}
+  .store-note{text-align:center;color:var(--mute);font-size:.88rem;margin-top:22px;padding:0 20px}`;
+  document.head.appendChild(css);
+
+  /* ---- nav ---- */
+  document.body.insertAdjacentHTML("afterbegin",
+    '<nav class="nav" aria-label="Main"><a class="nav-brand" href="#"><span id="navPfp"></span><b id="navName"></b></a>' +
+    '<div class="nav-links" id="navLinks"></div>' +
+    '<a class="nav-cta" id="navCta" target="_blank" rel="noopener noreferrer">Join Discord</a></nav>');
+  $("navName").textContent = CONFIG.name + " Editing";
+  const p = new Image(); p.alt = "";
+  p.onload = () => $("navPfp").appendChild(p);
+  p.onerror = () => $("navPfp").appendChild(make("span", "nb-fb", CONFIG.name.charAt(0).toUpperCase()));
+  p.src = CONFIG.pfp;
+  $("navCta").href = DISCORD_URL;
+  [{ n: "Home", h: "#", k: "" }, { n: "Work", h: "#work", k: "work" },
+   { n: "Discord", h: DISCORD_URL, ext: 1 }, { n: "Store", h: "#store", k: "store" }].forEach((l) => {
+    const a = make("a", "", l.n); a.href = l.h;
+    if (l.k !== undefined) a.dataset.k = l.k;
+    if (l.ext) { a.target = "_blank"; a.rel = "noopener noreferrer"; }
+    $("navLinks").appendChild(a);
+  });
+
+  /* ---- store page ---- */
+  const sp = make("div"); sp.id = "storePage"; sp.hidden = true;
+  sp.innerHTML = '<section class="hero small"><div class="style-head"><h1>Store</h1>' +
+    '<p class="bio">Presets and sound effects, ready to drop into your edits.</p></div></section>' +
+    '<main class="stage"><div class="store-grid" id="storeGrid"></div>' +
+    '<p class="store-note">Buying through Discord: click Buy, paste the message, and I\'ll send it over.</p></main>';
+  document.querySelector(".top").appendChild(sp);
+
+  STORE.forEach((it) => {
+    const c = make("div", "product fx");
+    const im = make("div", "pimg"), pic = new Image(); pic.alt = it.name; pic.src = it.image; im.appendChild(pic);
+    const b = make("div", "pbody");
+    if (it.badge) b.appendChild(make("span", "badge", it.badge));
+    b.appendChild(make("h3", "", it.name));
+    b.appendChild(make("p", "pdesc", it.desc));
+    b.appendChild(make("div", "pprice", it.price));
+    const buy = make("a", "q-btn mag rip", "Buy " + it.name);
+    buy.href = it.link || DISCORD_URL; buy.target = "_blank"; buy.rel = "noopener noreferrer";
+    if (!it.link) buy.addEventListener("click", () => {
+      try {
+        navigator.clipboard.writeText("Hi " + CONFIG.name + "! I'd like to buy the " + it.name + " (" + it.price + ").");
+        buy.textContent = "Copied! Paste it in Discord";
+      } catch (e) {}
+      setTimeout(() => { buy.textContent = "Buy " + it.name; }, 2400);
+    });
+    b.appendChild(buy); c.appendChild(im); c.appendChild(b);
+    $("storeGrid").appendChild(c);
+  });
+
+  /* ---- routing (runs after your own router) ---- */
+  function nav() {
+    const id = decodeURIComponent(location.hash.replace(/^#\/?/, ""));
+    const isStore = id === "store";
+    sp.hidden = !isStore;
+    if (isStore) {
+      stopRecent();
+      $("home").hidden = true; $("stylePage").hidden = true;
+      document.title = "Store | " + CONFIG.name;
+      window.scrollTo({ top: 0, behavior: "instant" });
+    }
+    document.querySelectorAll("#navLinks a[data-k]").forEach((a) =>
+      a.classList.toggle("on", a.dataset.k === (isStore ? "store" : id === "work" ? "work" : "")));
+    if (id === "work" && !$("recentBlock").hidden)
+      $("recentBlock").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  window.addEventListener("hashchange", nav);
+  nav();
+})();
+</script>
