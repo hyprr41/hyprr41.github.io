@@ -583,6 +583,60 @@
     .cinfo { padding: 22px; }
   }
 
+  /* ---------- order + price estimator ---------- */
+  #quoteWrap { max-width: 960px; margin: 0 auto; padding: 0 20px; }
+  .quote { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 28px; text-align: left; }
+  .q-step + .q-step { margin-top: 22px; }
+  .q-step h3 { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font: 600 1.05rem "Chakra Petch", sans-serif; }
+  .q-step h3 small { color: var(--mute); font: 500 .85rem "Manrope", sans-serif; }
+  .q-step .n {
+    width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center;
+    background: var(--accent2); color: #fff; font: 700 .85rem "Manrope", sans-serif; box-shadow: 0 0 14px var(--glow);
+  }
+  .opts, .mins { display: flex; flex-wrap: wrap; gap: 8px; }
+  .opt {
+    cursor: pointer; padding: 9px 16px; border-radius: 999px;
+    border: 1px solid var(--line); background: rgba(255,255,255,.04); color: var(--text);
+    font: 600 .92rem "Manrope", sans-serif;
+    transition: transform .3s var(--spring), background .25s ease, border-color .25s ease, box-shadow .25s ease;
+  }
+  .opt:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .opt.on { background: var(--accent2); border-color: var(--accent); color: #fff; box-shadow: 0 0 20px var(--glow); transform: translateY(-2px) scale(1.05); }
+  .mins .opt { min-width: 46px; padding: 10px 0; text-align: center; }
+  .q-input {
+    width: 100%; padding: 12px 16px; border-radius: 12px;
+    border: 1px solid var(--line); background: rgba(255,255,255,.04); color: var(--text);
+    font: 500 1rem "Manrope", sans-serif; transition: border-color .25s ease, box-shadow .25s ease;
+  }
+  .q-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(77,141,255,.22); }
+  .q-result {
+    display: flex; flex-direction: column; gap: 10px; padding: 22px; border-radius: 18px;
+    background: linear-gradient(160deg, #15224a, #0d1530);
+    border: 1px solid rgba(77,141,255,.4); box-shadow: 0 0 40px rgba(77,141,255,.14);
+  }
+  .q-label { color: var(--mute); font-weight: 600; font-size: .9rem; }
+  .q-price { font: 700 3.6rem/1 "Chakra Petch", sans-serif; color: #fff; text-shadow: 0 0 30px rgba(77,141,255,.55); }
+  .q-price.bump { animation: bump .5s var(--spring); }
+  @keyframes bump { 40% { transform: scale(1.1); } }
+  .q-sub { font-weight: 600; }
+  .q-hint { color: #8fd0ff; font-size: .9rem; min-height: 1.3em; }
+  .q-msg {
+    white-space: pre-wrap; margin: 4px 0 0; padding: 12px 14px; border-radius: 12px;
+    background: rgba(0,0,0,.28); border: 1px solid var(--line); color: var(--mute);
+    font: 500 .88rem/1.5 "Manrope", sans-serif;
+  }
+  .q-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
+  .q-btn {
+    flex: 1 1 140px; text-align: center; padding: 12px 18px; border-radius: 999px;
+    border: 1px solid var(--accent2); background: var(--accent2); color: #fff;
+    font: 700 .95rem "Manrope", sans-serif; text-decoration: none; cursor: pointer;
+  }
+  .q-btn:hover { background: var(--accent); box-shadow: 0 8px 22px var(--glow); }
+  .q-btn.ghost { background: transparent; border-color: var(--line); color: var(--text); }
+  .q-btn.ghost:hover { background: rgba(255,255,255,.06); border-color: var(--accent); box-shadow: none; }
+  .q-note { color: var(--mute); font-size: .8rem; }
+  @media (max-width: 860px) { .quote { grid-template-columns: 1fr; } }
+
   @media (max-width: 640px) {
     .grid { grid-template-columns: 1fr; }
     .panel { padding: 20px; }
@@ -640,6 +694,11 @@
           <div class="track" id="reviewTrack"></div>
         </div>
         <div class="reviews-still" id="reviewStill" hidden></div>
+      </section>
+
+      <section class="block" id="orderBlock">
+        <h2>Order your edit</h2>
+        <div id="quoteWrap"></div>
       </section>
     </main>
   </div>
@@ -730,6 +789,23 @@ const CONFIG = {
     }
   ],
   reviewSpeed: 40,
+
+  /* ORDER + PRICE ESTIMATOR (under the reviews). People pick a style and a length from 1 to 22 minutes.
+     The price is a straight line drawn between the "points" below, so change the points to change the prices.
+     Example: 8 minutes costs $15 and 15 minutes costs $30, so 12 minutes comes out around $24.      */
+  quote: {
+    styles: ["Roblox", "Gorilla Tag", "Minecraft", "Other"],
+    minMinutes: 1,
+    maxMinutes: 22,
+    points: [
+      { min: 1,  price: 5 },       // a Short
+      { min: 8,  price: 15 },      // long form starts at $15
+      { min: 15, price: 30 },      // long form tops out at $30
+      { min: 22, price: 45 }       // longer videos keep going up the same way
+    ],
+    robux: { from: 8, to: 10, text: "You can also pay 2.5k Robux for this length." },
+    note: "This is an estimate. I confirm the final price with you in DMs."
+  },
 
   /* The editing style boxes on the home page. Each one opens its own page.
      featured  : true = this style is shown big at the top as your main style (only use it on one)
@@ -1223,6 +1299,165 @@ function whenVisible(el, fn, threshold) {
       setTimeout(() => still.querySelectorAll(".pop").forEach((c) => c.classList.remove("pop")), 1500 + list.length * 160);
     }, 0.25);
   }
+})();
+
+/* ---------- order + price estimator ---------- */
+(function buildQuote() {
+  const Q = CONFIG.quote;
+  if (!Q || !Q.points || !Q.points.length) return;
+  const styles = Q.styles && Q.styles.length ? Q.styles : ["Roblox"];
+  const MIN = Q.minMinutes || 1, MAX = Q.maxMinutes || 22;
+  const pts = Q.points.slice().sort((a, b) => a.min - b.min);
+
+  /* the price is a straight line between your price points */
+  function priceFor(m) {
+    if (m <= pts[0].min) return pts[0].price;
+    for (let i = 1; i < pts.length; i++) {
+      if (m <= pts[i].min) {
+        const a = pts[i - 1], b = pts[i];
+        return Math.round(a.price + (b.price - a.price) * (m - a.min) / (b.min - a.min));
+      }
+    }
+    return pts[pts.length - 1].price;
+  }
+
+  let style = styles[0], mins = Math.min(Math.max(10, MIN), MAX), shown = priceFor(mins), anim = 0;
+
+  const panel = make("div", "panel fx quote");
+  const left = make("div");
+  const right = make("div", "q-result");
+
+  /* a row of choices you can click (arrow keys work too) */
+  function group(label, values, current, onPick, cls) {
+    const g = make("div", cls);
+    g.setAttribute("role", "radiogroup");
+    g.setAttribute("aria-label", label);
+    const btns = values.map((v) => {
+      const b = make("button", "opt", String(v));
+      b.type = "button";
+      b.setAttribute("role", "radio");
+      b.addEventListener("click", () => pick(v));
+      g.appendChild(b);
+      return b;
+    });
+    function paint(cur) {
+      btns.forEach((b, i) => {
+        const on = values[i] === cur;
+        b.classList.toggle("on", on);
+        b.setAttribute("aria-checked", on ? "true" : "false");
+        b.tabIndex = on ? 0 : -1;
+      });
+    }
+    function pick(v) { paint(v); onPick(v); }
+    g.addEventListener("keydown", (e) => {
+      const i = values.indexOf(values.find((v, k) => btns[k].classList.contains("on")));
+      let n = i;
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") n = Math.min(i + 1, values.length - 1);
+      else if (e.key === "ArrowLeft" || e.key === "ArrowUp") n = Math.max(i - 1, 0);
+      else return;
+      e.preventDefault();
+      pick(values[n]);
+      btns[n].focus();
+    });
+    paint(current);
+    return g;
+  }
+
+  function step(num, title, extra, body) {
+    const s = make("div", "q-step");
+    const h = make("h3");
+    h.appendChild(make("span", "n", String(num)));
+    h.appendChild(document.createTextNode(title));
+    if (extra) h.appendChild(make("small", "", extra));
+    s.appendChild(h);
+    s.appendChild(body);
+    return s;
+  }
+
+  const lengths = [];
+  for (let m = MIN; m <= MAX; m++) lengths.push(m);
+
+  left.appendChild(step(1, "Pick a style", "", group("Style", styles, style, (v) => { style = v; render(); }, "opts")));
+  left.appendChild(step(2, "Pick the length", "minutes", group("Length in minutes", lengths, mins, (v) => { mins = v; render(); }, "mins")));
+  const deadline = make("input", "q-input");
+  deadline.type = "text";
+  deadline.maxLength = 60;
+  deadline.placeholder = "e.g. this Friday";
+  deadline.setAttribute("aria-label", "Deadline");
+  deadline.addEventListener("input", render);
+  left.appendChild(step(3, "Deadline ", "(optional)", deadline));
+
+  /* the result card */
+  const price = make("div", "q-price", "$" + shown);
+  const sub = make("div", "q-sub");
+  const hint = make("div", "q-hint");
+  const msg = make("pre", "q-msg");
+  const actions = make("div", "q-actions");
+  const copyBtn = make("button", "q-btn mag rip", "Copy order message");
+  copyBtn.type = "button";
+  actions.appendChild(copyBtn);
+  const dc = (CONFIG.socials || []).find((s) => s.url && /discord/i.test(s.name));
+  if (dc) {
+    const open = make("a", "q-btn ghost mag rip", "Open Discord");
+    open.href = dc.url; open.target = "_blank"; open.rel = "noopener noreferrer";
+    actions.appendChild(open);
+  }
+  right.appendChild(make("div", "q-label", "Estimated price"));
+  right.appendChild(price);
+  right.appendChild(sub);
+  right.appendChild(hint);
+  right.appendChild(msg);
+  right.appendChild(actions);
+  right.appendChild(make("div", "q-note", Q.note || "This is an estimate. The final price is confirmed in DMs."));
+
+  function messageText() {
+    return "Hi " + CONFIG.name + "! I'd like to order a " + style + " edit.\n" +
+      "Length: about " + mins + (mins === 1 ? " minute (Short)" : " minutes") + "\n" +
+      "Estimated price: $" + priceFor(mins) + "\n" +
+      "Deadline: " + (deadline.value.trim() || "flexible");
+  }
+
+  function render() {
+    const target = priceFor(mins);
+    sub.textContent = style + " \u00B7 " + mins + (mins === 1 ? " minute (Short)" : " minute video");
+    const rb = Q.robux;
+    hint.textContent = rb && mins >= rb.from && mins <= rb.to ? rb.text : "";
+    msg.textContent = messageText();
+    // the number rolls to the new price
+    cancelAnimationFrame(anim);
+    const from = shown, t0 = performance.now(), dur = FX ? 450 : 1;
+    price.classList.remove("bump"); void price.offsetWidth; if (FX) price.classList.add("bump");
+    (function tick(t) {
+      const p = Math.min((t - t0) / dur, 1);
+      shown = Math.round(from + (target - from) * (1 - Math.pow(1 - p, 3)));
+      price.textContent = "$" + shown;
+      if (p < 1) anim = requestAnimationFrame(tick);
+    })(t0);
+  }
+
+  async function copyText(t) {
+    try { await navigator.clipboard.writeText(t); return true; } catch (e) {
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = t; ta.style.position = "fixed"; ta.style.opacity = "0";
+        document.body.appendChild(ta); ta.select();
+        const ok = document.execCommand("copy");
+        ta.remove();
+        return ok;
+      } catch (e2) { return false; }
+    }
+  }
+  copyBtn.addEventListener("click", async () => {
+    const ok = await copyText(messageText());
+    copyBtn.textContent = ok ? "Copied! Paste it in Discord" : "Couldn't copy, select the text above";
+    setTimeout(() => { copyBtn.textContent = "Copy order message"; }, 2400);
+  });
+
+  panel.appendChild(left);
+  panel.appendChild(right);
+  $("quoteWrap").appendChild(panel);
+  render();
+  reveal(panel, 0, { clean: true });
 })();
 
 /* ---------- one style page ---------- */
