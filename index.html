@@ -466,7 +466,18 @@ footer { position: relative; z-index: 1; text-align: center; padding: 24px 24px 
 .foot-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 18px; margin-bottom: 10px; }
 .foot-links a { color: var(--mute); text-decoration: none; font-weight: 600; }
 .foot-links a:hover { color: #fff; }
-@media (max-width: 700px) { .stats { grid-template-columns: repeat(2, 1fr); } .steps { grid-template-columns: 1fr; } }
+.wz-price small { font: 600 1.4rem var(--body); color: var(--mute); text-shadow: none; }
+.wz-step > .opts { margin-bottom: -4px; }
+.toasts { position: fixed; left: 50%; bottom: 24px; z-index: 90; translate: -50% 0; display: grid; gap: 8px; justify-items: center; pointer-events: none; }
+.toast { padding: 10px 20px; border-radius: 999px; background: rgba(10,16,34,.92); border: 1px solid var(--accent); color: #fff; font-weight: 600; font-size: .92rem; box-shadow: 0 10px 30px rgba(0,0,0,.5), 0 0 20px var(--glow); opacity: 0; translate: 0 14px; transition: opacity .35s ease, translate .45s var(--spring); }
+.toast.in { opacity: 1; translate: 0 0; }
+.style-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.sn { display: flex; flex-direction: column; gap: 4px; padding: 18px 20px; border-radius: var(--r-md); text-decoration: none; background: var(--panel); border: 1px solid var(--line); transition: border-color .25s ease, translate .4s var(--ease), box-shadow .3s ease; }
+.sn:hover { border-color: var(--accent); translate: 0 -4px; box-shadow: 0 14px 34px var(--glow); }
+.sn.next { text-align: right; }
+.sn small { color: var(--accent); font-weight: 700; }
+.sn b { font: 600 1.05rem var(--display); }
+@media (max-width: 700px) { .stats { grid-template-columns: repeat(2, 1fr); } .steps { grid-template-columns: 1fr; } .style-nav { grid-template-columns: 1fr; } .sn.next { text-align: left; } }
 
 /* =====================================================================
    VIEW TRANSITIONS + MOTION SWITCHES + RESPONSIVE
@@ -574,7 +585,7 @@ const CONFIG = {
 
   /* "How it works" steps */
   steps: [
-    { title: "DM me", text: "Message me on Discord or use the estimator below to get a price and copy your order message." },
+    { title: "DM me", text: "Pick a style, use the price estimator on its page, then copy your order message and send it to me on Discord." },
     { title: "Send your footage", text: "Share your raw clips, music and any notes or examples of the style you like." },
     { title: "Get your edit", text: "I deliver fast and take your feedback until you're happy with it." }
   ],
@@ -589,7 +600,15 @@ const CONFIG = {
       { min: 15, price: 30 },
       { min: 22, price: 45 }
     ],
-    robux: { from: 8, to: 10, text: "You can also pay 2.5k Robux for this length." },
+    /* Robux prices, drawn the same way as the dollar points. Change these to your real rates.
+       (2.5k for 8-10 min and 700 for a Short come from your site and reviews; the rest are estimates.) */
+    robuxPoints: [
+      { min: 1,  price: 700 },
+      { min: 8,  price: 2500 },
+      { min: 10, price: 2500 },
+      { min: 15, price: 5000 },
+      { min: 22, price: 7500 }
+    ],
     note: "This is an estimate. I confirm the final price with you in DMs."
   },
 
@@ -624,7 +643,7 @@ const STORE = [
 
 const FAQ = [
   { q: "What do you edit?", a: "YouTube videos, Shorts, TikToks and more. My main style is Roblox, and I also do Gorilla Tag and Minecraft." },
-  { q: "How much does an edit cost?", a: "Shorts start at $5 and long form is $15-45 depending on length. Use the price estimator at the bottom of the page for a quick quote." },
+  { q: "How much does an edit cost?", a: "Shorts start at $5 and long form is $15-45 depending on length. Open any editing style and use the price estimator there for a quick quote, in dollars or Robux." },
   { q: "How long does an edit take?", a: "It depends on the length, but I work fast. Tell me your deadline when you order and I'll confirm if I can make it." },
   { q: "Do you do revisions?", a: "Yes. I take on your feedback until you're happy with the edit." },
   { q: "How do I pay?", a: "Dollars or Robux. We sort out the payment in Discord DMs before I start." },
@@ -711,14 +730,22 @@ function countTo(el, from, to, dur, fmt) {
 }
 
 async function copyText(t) {
-  try { await navigator.clipboard.writeText(t); return true; }
+  try { await navigator.clipboard.writeText(t); toast("Copied to clipboard"); return true; }
   catch (e) {
     try {
       const ta = h("textarea", { style: "position:fixed;opacity:0" });
       ta.value = t; document.body.appendChild(ta); ta.select();
-      const ok = document.execCommand("copy"); ta.remove(); return ok;
+      const ok = document.execCommand("copy"); ta.remove(); if (ok) toast("Copied to clipboard"); return ok;
     } catch (e2) { return false; }
   }
+}
+function toast(msg) {
+  let box = $("#toasts");
+  if (!box) { box = h("div", { id: "toasts", class: "toasts", "aria-live": "polite" }); document.body.appendChild(box); }
+  const t = h("div", { class: "toast", text: msg });
+  box.appendChild(t);
+  requestAnimationFrame(() => t.classList.add("in"));
+  setTimeout(() => { t.classList.remove("in"); setTimeout(() => t.remove(), 450); }, 2000);
 }
 function flash(btn, text, label, ms = 2000) {
   btn.textContent = text;
@@ -940,16 +967,21 @@ function quote(preset) {
   const pts = Q.points.slice().sort((a, b) => a.min - b.min);
   const lengths = Array.from({ length: MAX - MIN + 1 }, (_, i) => MIN + i);
 
-  const priceFor = (m) => {
-    if (m <= pts[0].min) return pts[0].price;
-    for (let i = 1; i < pts.length; i++) if (m <= pts[i].min) {
-      const a = pts[i - 1], b = pts[i];
-      return Math.round(a.price + (b.price - a.price) * (m - a.min) / (b.min - a.min));
+  const interp = (list, m) => {
+    if (m <= list[0].min) return list[0].price;
+    for (let i = 1; i < list.length; i++) if (m <= list[i].min) {
+      const a = list[i - 1], b = list[i];
+      return a.price + (b.price - a.price) * (m - a.min) / (b.min - a.min);
     }
-    return pts[pts.length - 1].price;
+    return list[list.length - 1].price;
   };
+  const rpts = (Q.robuxPoints || []).slice().sort((a, b) => a.min - b.min);
+  const hasR = rpts.length > 0;
+  const priceFor = (m) => Math.round(interp(pts, m));
+  const robuxFor = (m) => Math.round(interp(rpts, m) / 50) * 50;      // rounded to the nearest 50
+  const fmtR = (n) => Math.round(n).toLocaleString("en-US");
 
-  const s = { style: preset ? (styles.find((x) => x.toLowerCase() === String(preset).toLowerCase()) || styles[styles.length - 1]) : null, mins: null, deadline: "" };
+  const s = { style: preset ? (styles.find((x) => x.toLowerCase() === String(preset).toLowerCase()) || styles[styles.length - 1]) : null, mins: null, deadline: "", pay: "usd" };
   const first = s.style ? 2 : 1;
   let step = first, back = false, stopCount = () => {};
   const root = h("div", { class: "panel fx wz" });
@@ -958,7 +990,7 @@ function quote(preset) {
   const message = () =>
     "Hi " + CONFIG.name + "! I'd like to order a " + s.style + " edit.\n" +
     "Length: about " + s.mins + (s.mins === 1 ? " minute (Short)" : " minutes") + "\n" +
-    "Estimated price: $" + priceFor(s.mins) + "\n" +
+    "Estimated price: " + (hasR && s.pay === "robux" ? fmtR(robuxFor(s.mins)) + " Robux" : "$" + priceFor(s.mins)) + "\n" +
     "Deadline: " + (s.deadline.trim() || "flexible");
 
   function choices(values, cur, cls, pick) {
@@ -998,24 +1030,30 @@ function quote(preset) {
       box.append(h("h3", { text: "When do you need it?" }), h("small", { text: "Optional, you can skip this" }), inp,
         nav(() => go(2), "See my price", () => go(4), true).el);
     } else {
-      const price = h("div", { class: "wz-price", text: "$0" });
-      const rb = Q.robux;
+      const isR = hasR && s.pay === "robux";
+      const num = h("span", { text: isR ? "0" : "$0" });
+      const price = h("div", { class: "wz-price" }, num, isR && h("small", { text: " Robux" }));
+      const pay = hasR && h("div", { class: "opts", role: "group", "aria-label": "Pay with" },
+        [["usd", "Dollars"], ["robux", "Robux"]].map(([k, l]) => h("button", {
+          class: "opt", type: "button", text: l, "aria-pressed": s.pay === k ? "true" : "false",
+          onclick: () => { s.pay = k; back = false; draw(); }
+        })));
       const copy = h("button", { class: "q-btn mag rip", type: "button", text: "Copy order message" });
       copy.addEventListener("click", async () => {
         const ok = await copyText(message());
         flash(copy, ok ? "Copied! Paste it in Discord" : "Couldn't copy, select the text", "Copy order message", 2400);
       });
       box.append(
-        h("small", { text: "Estimated price" }), price,
+        pay, h("small", { text: "Estimated price" }), price,
         h("div", { class: "wz-sub", text: s.style + " \u00B7 " + s.mins + (s.mins === 1 ? " minute (Short)" : " minute video") }),
-        rb && s.mins >= rb.from && s.mins <= rb.to && h("div", { class: "wz-hint", text: rb.text }),
+        hasR && h("div", { class: "wz-hint", text: isR ? "About $" + priceFor(s.mins) + " in dollars" : "or " + fmtR(robuxFor(s.mins)) + " Robux" }),
         h("small", { text: Q.note || "This is an estimate. The final price is confirmed in DMs." }),
         h("pre", { class: "q-msg", text: message() }),
         h("div", { class: "q-actions" }, copy, DISCORD_URL !== "#" && h("a", { class: "q-btn ghost mag rip", href: DISCORD_URL, target: "_blank", rel: "noopener noreferrer", text: "Open Discord" })),
         h("div", { class: "wz-nav" },
           h("button", { class: "q-btn ghost mag rip", type: "button", text: "Back", onclick: () => go(3) }),
           h("button", { class: "q-btn ghost mag rip", type: "button", text: "Start over", onclick: () => { s.mins = null; s.deadline = ""; if (!preset) s.style = null; go(first); } })));
-      stopCount = countTo(price, 0, priceFor(s.mins), 900, (v) => "$" + Math.round(v));
+      stopCount = countTo(num, 0, isR ? robuxFor(s.mins) : priceFor(s.mins), 900, (v) => isR ? fmtR(v) : "$" + Math.round(v));
     }
   }
   draw();
@@ -1030,29 +1068,17 @@ function statsRow() {
   const avg = rated.length ? rated.reduce((a, r) => a + r.stars, 0) / rated.length : null;
   const items = (CONFIG.stats || []).filter((s) => !(s.rating && avg === null));
   if (!items.length) return null;
-
-  // Build the row before registering its visibility callback. The previous
-  // version referenced `row` from inside its own initializer, causing a
-  // "Cannot access 'row' before initialization" error and stopping the page.
-  const row = h("div", { class: "stats" });
-  const counters = [];
-
-  items.forEach((s, i) => {
+  const row = h("div", { class: "stats" }, items.map((s, i) => {
     const val = h("b", { text: s.text || "0" });
     const el = h("div", { class: "stat" }, val, h("span", { text: s.label }));
-
     if (!s.text) {
-      const to = s.rating ? avg : Number(s.to) || 0;
-      const dec = s.rating ? 1 : 0;
+      const to = s.rating ? avg : s.to, dec = s.rating ? 1 : 0;
       const fmt = (v) => (s.prefix || "") + v.toFixed(dec) + (s.suffix || "");
       val.textContent = fmt(0);
-      counters.push(() => countTo(val, 0, to, 1300, fmt));
+      onceVisible(row, () => countTo(val, 0, to, 1300, fmt), 0.4);
     }
-
-    row.appendChild(reveal(el, i * 90));
-  });
-
-  if (counters.length) onceVisible(row, () => counters.forEach((start) => start()), 0.4);
+    return reveal(el, i * 90);
+  }));
   return row;
 }
 
@@ -1102,7 +1128,6 @@ function homeView() {
     recent.length ? section("Recent work", reveal(h("div", {}, videoStrip(recent, CONFIG.recentSpeed)), 80)) : null,
     processSection(),
     reviewsSection(),
-    section("Order your edit", h("div", { class: "wrap" }, quote())),
     ctaBanner())];
 }
 
@@ -1166,13 +1191,25 @@ function styleView(st) {
 
   panels.push(h("section", { class: "panel fx order" }, h("h2", { text: "Want an edit like this?" }),
     h("p", { class: "sub", text: "DM me " + CONFIG.discord + " on Discord, or reach me here:" }), h("div", { class: "socials" }, socialButtons(true))));
+  const all = CONFIG.styles.slice().sort((a, b) => !!b.featured - !!a.featured);
+  if (all.length > 1) {
+    const i = all.indexOf(st), prev = all[(i - 1 + all.length) % all.length], next = all[(i + 1) % all.length];
+    panels.push(h("div", { class: "style-nav" },
+      h("a", { class: "sn fx", href: "#" + prev.id }, h("small", { text: "← Previous style" }), h("b", { text: prev.title })),
+      h("a", { class: "sn fx next", href: "#" + next.id }, h("small", { text: "Next style →" }), h("b", { text: next.title }))));
+  }
   panels.forEach((p, i) => { if (!p.classList.contains("reveal")) reveal(p, i * 90); });
 
   return [
     h("section", { class: "hero small" }, h("div", { class: "profile", style: "max-width:760px" },
       h("a", { class: "back mag rip rise", href: "#" }, h("i", { text: "\u2190" }), "All styles"),
       h("h1", { class: "rise", style: "--d:100", text: st.title }),
-      h("p", { class: "bio rise", style: "--d:200", text: st.blurb || "" }))),
+      h("p", { class: "bio rise", style: "--d:200", text: st.blurb || "" }),
+      h("div", { class: "socials rise", style: "--d:300" }, (() => {
+        const b = h("button", { class: "chip mag rip", type: "button", text: "Copy page link" });
+        b.addEventListener("click", async () => { const ok = await copyText(location.href); flash(b, ok ? "Link copied" : "Copy failed", "Copy page link", 1800); });
+        return b;
+      })()))),
     h("main", { class: "stage" }, h("div", { class: "panels" }, panels))
   ];
 }
