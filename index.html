@@ -1681,13 +1681,13 @@ reveal($("foot"), 0);
 </html>
 
 <script>
-/* ===== NAV + STORE (single paste) ===== */
+/* ===== NAV + STORE + STYLES PAGE (single paste) ===== */
 const STORE = [
-  { name: "Premiere Pro\npreset pack", price: "$10", image: "presets.png",
-    desc: "Presets and more. 25+ assets for editing in Premiere Pro.", link: "" },
-  { name: "Sound\neffect pack", price: "$7", image: "sfx.png",
-    desc: "25+ sound effects for your editing.", link: "" }
+  { name: "Presets + SFX\npack", price: "$10", images: ["presets.png", "sfx.png"],
+    desc: "Everything in one pack to level up your edits.",
+    includes: ["Presets and more: 25+ assets", "25+ sound effects"], link: "" }
 ];   // "link": put a Gumroad/Payhip link to sell with checkout. Empty = Buy now opens your Discord.
+const SHOW_NAV_ON_SCROLL_UP = true;   // false = the top bar only comes back when you reach the top
 
 (function () {
   const DISCORD_URL = ((CONFIG.socials || []).find((s) => /discord/i.test(s.name)) || {}).url || "#";
@@ -1699,7 +1699,8 @@ const STORE = [
   const css = document.createElement("style");
   css.textContent = `
   body{padding-top:72px}
-  .nav{position:fixed;top:12px;left:50%;transform:translateX(-50%);width:min(1040px,calc(100% - 24px));z-index:70;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:10px 12px 10px 14px;border-radius:18px;background:rgba(10,16,34,.78);border:1px solid var(--line);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 12px 34px rgba(0,0,0,.5)}
+  .nav{position:fixed;top:12px;left:50%;transform:translateX(-50%);width:min(1040px,calc(100% - 24px));z-index:70;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:10px 12px 10px 14px;border-radius:18px;background:rgba(10,16,34,.78);border:1px solid var(--line);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 12px 34px rgba(0,0,0,.5);transition:transform .5s cubic-bezier(.22,1,.36,1),opacity .4s ease}
+  .nav.hide{transform:translate(-50%,-150%);opacity:0;pointer-events:none}
   .nav-brand{display:flex;align-items:center;gap:12px;color:var(--text);text-decoration:none}
   .nav-brand img,.nav-brand .nb-fb{width:40px;height:40px;border-radius:12px;object-fit:cover;border:1px solid var(--line);background:var(--panel2);display:grid;place-items:center;color:var(--accent);font:700 1.2rem "Chakra Petch",sans-serif}
   .nav-brand b{font:700 1.1rem "Chakra Petch",sans-serif;white-space:nowrap}
@@ -1711,27 +1712,36 @@ const STORE = [
   .nav-cta:hover{background:var(--accent);box-shadow:0 6px 20px var(--glow)}
   @media(max-width:700px){.nav-brand b{display:none}.nav-links a{padding:8px 9px;font-size:.88rem}.nav-cta{padding:9px 14px}}
 
-  /* store (matches the reference) */
+  /* styles page */
+  #stylesPage .stage{padding-top:10px}
+
+  /* store */
   .st-hero{text-align:center;padding:40px 20px 10px}
   .st-title{font-family:"Archivo Black","Arial Black",Impact,sans-serif;color:#d9d6f7;text-transform:uppercase;letter-spacing:-.045em;line-height:.9;text-shadow:0 6px 30px rgba(120,110,255,.28),0 2px 0 rgba(255,255,255,.12)}
   .st-title .t1{display:block;font-size:clamp(3rem,11vw,6.4rem)}
   .st-title .t2{display:block;font-size:clamp(4.4rem,17vw,10.2rem);margin-top:-.02em}
   .st-sub{margin-top:26px;color:#9b98b8;font-size:1.02rem}
-  .st-wrap{max-width:1016px;margin:0 auto;padding:46px 20px 80px}
-  .st-wrap h2{font:500 1.35rem "Manrope",sans-serif;color:#fff;margin-bottom:20px;text-align:left}
-  .st-wrap h2::after{display:none}
-  .st-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:24px}
-  .st-card{display:flex;flex-direction:column;gap:18px;padding:26px 28px 28px;border-radius:22px;background:rgba(17,18,30,.92);border:1px solid rgba(255,255,255,.07);transition:border-color .25s ease,transform .3s ease,box-shadow .3s ease}
-  .st-card:hover{border-color:rgba(130,120,255,.5);transform:translateY(-4px);box-shadow:0 18px 40px rgba(0,0,0,.45),0 0 28px rgba(110,100,255,.15)}
-  .st-head{display:flex;align-items:center;gap:18px}
-  .st-head img{width:76px;height:76px;border-radius:20px;object-fit:cover;flex:none;box-shadow:0 8px 22px rgba(0,0,0,.45)}
-  .st-head h3{font:500 1.4rem/1.2 "Manrope",sans-serif;color:#fff;white-space:pre-line}
-  .st-desc{color:#8e8ba8;font-size:.97rem;line-height:1.6;min-height:3.2em}
-  .st-price{font-family:"Archivo Black","Arial Black",sans-serif;font-size:2.8rem;line-height:1;color:#fff;letter-spacing:-.02em}
+  .st-wrap{max-width:1016px;margin:0 auto;padding:44px 20px 80px}
+  .st-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:24px}
+  .st-card{position:relative;overflow:hidden;width:min(440px,100%);display:flex;flex-direction:column;gap:16px;padding:30px;border-radius:24px;background:rgba(17,18,30,.92);border:1px solid rgba(255,255,255,.08);transition:border-color .3s ease,transform .35s ease,box-shadow .35s ease}
+  .st-card:hover{border-color:rgba(130,120,255,.55);transform:translateY(-5px);box-shadow:0 22px 48px rgba(0,0,0,.5),0 0 34px rgba(110,100,255,.2)}
+  .st-card::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(110deg,transparent 38%,rgba(160,150,255,.13) 50%,transparent 62%);transform:translateX(-130%);animation:stSweep 5.5s ease-in-out infinite}
+  @keyframes stSweep{0%,55%{transform:translateX(-130%)}100%{transform:translateX(130%)}}
+  @keyframes stFloat{50%{transform:translateY(-7px)}}
+  .st-ico{display:flex}
+  .st-ico img{width:80px;height:80px;border-radius:22px;object-fit:cover;border:3px solid #11121e;box-shadow:0 10px 26px rgba(0,0,0,.5);animation:stFloat 5s ease-in-out infinite}
+  .st-ico img+img{margin-left:-20px}
+  .st-card h3{font:600 1.75rem/1.15 "Manrope",sans-serif;color:#fff;white-space:pre-line}
+  .st-desc{color:#8e8ba8;line-height:1.6}
+  .st-inc{list-style:none;padding:0;display:grid;gap:10px}
+  .st-inc li{display:flex;align-items:center;gap:10px;color:#cdcaf0;font-size:.97rem}
+  .st-inc li::before{content:"\\2713";display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:rgba(91,91,222,.28);color:#b4b4ff;font-size:.72rem;flex:none}
+  .st-price{font-family:"Archivo Black","Arial Black",sans-serif;font-size:3rem;line-height:1;color:#fff;letter-spacing:-.02em;margin-top:4px}
   .st-price small{font-size:.5em;letter-spacing:0}
-  .st-buy{display:block;text-align:center;padding:14px 18px;border-radius:12px;background:#5b5bde;color:#fff;text-decoration:none;font:600 .95rem "Manrope",sans-serif;box-shadow:inset 0 1px 0 rgba(255,255,255,.18);transition:background .2s ease,box-shadow .2s ease}
-  .st-buy:hover{background:#6c6cf0;box-shadow:0 8px 24px rgba(91,91,222,.45)}
-  .st-note{margin-top:22px;color:#7b7897;font-size:.85rem}`;
+  .st-buy{display:block;text-align:center;padding:15px 18px;border-radius:12px;background:#5b5bde;color:#fff;text-decoration:none;font:600 1rem "Manrope",sans-serif;box-shadow:inset 0 1px 0 rgba(255,255,255,.18);transition:background .2s ease,box-shadow .2s ease,transform .2s ease}
+  .st-buy:hover{background:#6c6cf0;box-shadow:0 8px 26px rgba(91,91,222,.5);transform:translateY(-1px)}
+  .st-note{margin-top:22px;text-align:center;color:#7b7897;font-size:.85rem}
+  .lite .st-card::after,.lite .st-ico img{animation:none}`;
   document.head.appendChild(css);
 
   /* ---- nav ---- */
@@ -1745,7 +1755,7 @@ const STORE = [
   p.onerror = () => $("navPfp").appendChild(make("span", "nb-fb", CONFIG.name.charAt(0).toUpperCase()));
   p.src = CONFIG.pfp;
   $("navCta").href = DISCORD_URL;
-  [{ n: "Home", h: "#", k: "" }, { n: "Work", h: "#work", k: "work" },
+  [{ n: "Home", h: "#", k: "" }, { n: "Styles", h: "#styles", k: "styles" },
    { n: "Discord", h: DISCORD_URL, ext: 1 }, { n: "Store", h: "#store", k: "store" }].forEach((l) => {
     const a = make("a", "", l.n); a.href = l.h;
     if (l.k !== undefined) a.dataset.k = l.k;
@@ -1753,20 +1763,55 @@ const STORE = [
     $("navLinks").appendChild(a);
   });
 
+  /* top bar hides when you scroll down */
+  const navEl = document.querySelector(".nav");
+  let lastY = scrollY;
+  window.addEventListener("scroll", () => {
+    const y = scrollY;
+    if (y <= 80) navEl.classList.remove("hide");
+    else if (y > lastY + 2) navEl.classList.add("hide");
+    else if (SHOW_NAV_ON_SCROLL_UP && y < lastY - 2) navEl.classList.remove("hide");
+    lastY = y;
+  }, { passive: true });
+
+  /* ---- styles page (only the "Choose an editing style" section) ---- */
+  const sp2 = make("div"); sp2.id = "stylesPage"; sp2.hidden = true;
+  sp2.innerHTML = "<main class='stage'></main>";
+  document.querySelector(".top").appendChild(sp2);
+  function buildStyles() {
+    const main = sp2.querySelector("main"); main.innerHTML = "";
+    const src = $("grid") && $("grid").closest(".block");
+    if (!src) return;
+    const cl = src.cloneNode(true);
+    cl.querySelectorAll("[id]").forEach((e) => e.removeAttribute("id"));
+    cl.querySelectorAll(".reveal").forEach((e) => e.classList.remove("reveal", "in"));
+    cl.querySelectorAll("h2").forEach((h) => h.classList.add("in"));
+    cl.querySelectorAll("img").forEach((i) => i.classList.add("ready"));
+    cl.querySelectorAll(".loading").forEach((e) => e.classList.remove("loading"));
+    cl.querySelectorAll(".card,.more").forEach((e, i) => { e.classList.add("rise"); e.style.setProperty("--d", i * 110); });
+    main.appendChild(cl);
+  }
+
   /* ---- store page ---- */
   const sp = make("div"); sp.id = "storePage"; sp.hidden = true;
-  sp.innerHTML = '<section class="st-hero"><h1 class="st-title"><span class="t1">Editing</span><span class="t2">Store</span></h1>' +
-    '<p class="st-sub">Products designed to improve your editing.</p></section>' +
-    '<div class="st-wrap"><h2>Launch store</h2><div class="st-grid" id="storeGrid"></div>' +
-    '<p class="st-note">Buying through Discord: click Buy now, paste the message, and I\'ll send it over.</p></div>';
+  sp.innerHTML = '<section class="st-hero"><h1 class="st-title"><span class="t1 rise" style="--d:0">Editing</span><span class="t2 rise" style="--d:140">Store</span></h1>' +
+    '<p class="st-sub rise" style="--d:300">Products designed to improve your editing.</p></section>' +
+    '<div class="st-wrap"><div class="st-grid" id="storeGrid"></div>' +
+    '<p class="st-note rise" style="--d:700">Buying through Discord: click Buy now, paste the message, and I\'ll send it over.</p></div>';
   document.querySelector(".top").appendChild(sp);
 
-  STORE.forEach((it) => {
-    const c = make("div", "st-card");
-    const head = make("div", "st-head"), pic = new Image(); pic.alt = ""; pic.src = it.image;
-    head.appendChild(pic); head.appendChild(make("h3", "", it.name));
-    c.appendChild(head);
-    c.appendChild(make("p", "st-desc", it.desc));
+  STORE.forEach((it, n) => {
+    const c = make("div", "st-card rise"); c.style.setProperty("--d", 450 + n * 150);
+    const ico = make("div", "st-ico");
+    (it.images || [it.image]).forEach((src, k) => {
+      const im = new Image(); im.alt = ""; im.src = src; im.style.animationDelay = (k * 0.7) + "s"; ico.appendChild(im);
+    });
+    c.appendChild(ico);
+    c.appendChild(make("h3", "", it.name));
+    if (it.desc) c.appendChild(make("p", "st-desc", it.desc));
+    if (it.includes && it.includes.length) {
+      const ul = make("ul", "st-inc"); it.includes.forEach((t) => ul.appendChild(make("li", "", t))); c.appendChild(ul);
+    }
     const pr = make("div", "st-price"), parts = String(it.price).split(".");
     pr.appendChild(document.createTextNode(parts[0]));
     if (parts[1]) pr.appendChild(make("small", "", "." + parts[1]));
@@ -1788,18 +1833,20 @@ const STORE = [
   /* ---- routing (runs after your own router) ---- */
   function nav() {
     const id = decodeURIComponent(location.hash.replace(/^#\/?/, ""));
-    const isStore = id === "store";
-    sp.hidden = !isStore;
-    if (isStore) {
+    const isStore = id === "store", isStyles = id === "styles";
+    const isStylePage = CONFIG.styles.some((s) => s.id === id);
+    sp.hidden = !isStore; sp2.hidden = !isStyles;
+    if (isStore || isStyles) {
       stopRecent();
+      $("panels").innerHTML = "";
       $("home").hidden = true; $("stylePage").hidden = true;
-      document.title = "Store | " + CONFIG.name;
+      document.title = (isStore ? "Store" : "Editing styles") + " | " + CONFIG.name;
+      if (isStyles) buildStyles();
       window.scrollTo({ top: 0, behavior: "instant" });
     }
-    document.querySelectorAll("#navLinks a[data-k]").forEach((a) =>
-      a.classList.toggle("on", a.dataset.k === (isStore ? "store" : id === "work" ? "work" : "")));
-    if (id === "work" && !$("recentBlock").hidden)
-      $("recentBlock").scrollIntoView({ behavior: "smooth", block: "start" });
+    const key = isStore ? "store" : (isStyles || isStylePage) ? "styles" : "";
+    document.querySelectorAll("#navLinks a[data-k]").forEach((a) => a.classList.toggle("on", a.dataset.k === key));
+    navEl.classList.remove("hide");
   }
   window.addEventListener("hashchange", nav);
   nav();
