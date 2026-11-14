@@ -637,6 +637,19 @@
   .q-note { color: var(--mute); font-size: .8rem; }
   @media (max-width: 860px) { .quote { grid-template-columns: 1fr; } }
 
+  /* ---------- cleaner, roomier bio ---------- */
+  .tagline { margin-top: 14px; letter-spacing: .04em; }
+  #bio { max-width: 46ch; margin: 24px auto 0; font-size: 1.02rem; line-height: 1.75; }
+  #bio .bl { display: block; }
+  #bio .bl + .bl { margin-top: 12px; }
+  #bio .bl:first-child { color: var(--text); font-weight: 600; font-size: 1.14rem; }
+  .status { margin-top: 32px; }
+  .contact { margin-top: 18px; }
+  .socials { margin-top: 22px; }
+  .hero { padding-bottom: 34px; }
+  .ico { width: 18px; height: 18px; margin-right: 8px; border-radius: 5px; vertical-align: -4px; }
+  .q-title { margin: 0 0 14px 6px; font: 600 1.4rem "Chakra Petch", sans-serif; }
+
   @media (max-width: 640px) {
     .grid { grid-template-columns: 1fr; }
     .panel { padding: 20px; }
@@ -728,14 +741,15 @@
 /* Your price list. All the editing styles below use it. */
 const PRICES = [
   { name: "Shorts",        price: "$5",      note: "Fully edited Short (0\u201360 seconds)" },
-  { name: "Long form",     price: "$15-30",  note: "Fully edited long-form video (8\u201315 minutes)" },
+  { name: "Long form",     price: "$15-45",  note: "Fully edited long-form video (8\u201322 minutes)" },
   { name: "Robux",         price: "$2.5k",   note: "Fully edited long-form video (8-10 mins)", badge: "$12 discount!" }
 ];
 
 const CONFIG = {
   name: "hypr",
   tagline: "Video Editor",
-  bio: "YouTube videos, Shorts, TikToks and more. I've been editing for 4+ years, creating clean, smooth and engaging edits in any style. Take a look at my recent work below!",
+  // each new line in the bio becomes its own line on the site (the first one is the big one)
+  bio: "YouTube videos, Shorts, TikToks and more.\nI've been editing for 4+ years, creating clean, smooth and engaging edits in any style.\nTake a look at my recent work below!",
   discord: "hypr.7",                              // shown on the contact button
   pfp: "pfp.png",                                 // your profile picture file in the repo
 
@@ -743,7 +757,7 @@ const CONFIG = {
 
   // Social buttons. Give a link with "url", or use "copy" to copy text.
   socials: [
-    { name: "Discord", url: "https://discord.gg/efUch4nwY2" },
+    { name: "Discord", url: "https://discord.gg/efUch4nwY2", icon: "discord.png" },
     { name: "guns.lol", url: "https://guns.lol/hyprr8" }
   ],
 
@@ -800,8 +814,8 @@ const CONFIG = {
     points: [
       { min: 1,  price: 5 },       // a Short
       { min: 8,  price: 15 },      // long form starts at $15
-      { min: 15, price: 30 },      // long form tops out at $30
-      { min: 22, price: 45 }       // longer videos keep going up the same way
+      { min: 15, price: 30 },      // 15 minutes is about $30
+      { min: 22, price: 45 }       // long form tops out at $45
     ],
     robux: { from: 8, to: 10, text: "You can also pay 2.5k Robux for this length." },
     note: "This is an estimate. I confirm the final price with you in DMs."
@@ -890,7 +904,7 @@ $("name").setAttribute("aria-label", CONFIG.name);
   $("name").appendChild(s);
 });
 $("tagline").textContent = CONFIG.tagline;
-$("bio").textContent = CONFIG.bio;
+String(CONFIG.bio).split("\n").forEach((line) => { if (line.trim()) $("bio").appendChild(make("span", "bl", line.trim())); });
 const isOpen = CONFIG.commissions !== "closed";
 $("status").innerHTML = '<span class="dot' + (isOpen ? "" : " off") + '"></span><span></span>';
 $("status").lastChild.textContent = isOpen ? "Commissions open" : "Commissions closed";
@@ -937,6 +951,13 @@ function buildSocials(box, solid) {
     }
     el.className = "chip mag rip" + (solid ? " solid" : "");
     el.textContent = so.name;
+    if (so.icon) {                                   // little logo before the name
+      const ic = new Image();
+      ic.className = "ico"; ic.alt = "";
+      ic.onerror = () => ic.remove();
+      ic.src = so.icon;
+      el.insertBefore(ic, el.firstChild);
+    }
     box.appendChild(el);
   });
 }
@@ -1302,9 +1323,9 @@ function whenVisible(el, fn, threshold) {
 })();
 
 /* ---------- order + price estimator ---------- */
-(function buildQuote() {
+function buildQuote(target, preset, opts) {
   const Q = CONFIG.quote;
-  if (!Q || !Q.points || !Q.points.length) return;
+  if (!Q || !Q.points || !Q.points.length) return null;
   const styles = Q.styles && Q.styles.length ? Q.styles : ["Roblox"];
   const MIN = Q.minMinutes || 1, MAX = Q.maxMinutes || 22;
   const pts = Q.points.slice().sort((a, b) => a.min - b.min);
@@ -1321,7 +1342,12 @@ function whenVisible(el, fn, threshold) {
     return pts[pts.length - 1].price;
   }
 
-  let style = styles[0], mins = Math.min(Math.max(10, MIN), MAX), shown = priceFor(mins), anim = 0;
+  let style = styles[0];
+  if (preset) {                                      // pick the style of the page it is on
+    const hit = styles.find((x) => x.toLowerCase() === String(preset).toLowerCase());
+    style = hit || styles[styles.length - 1];
+  }
+  let mins = Math.min(Math.max(10, MIN), MAX), shown = priceFor(mins), anim = 0;
 
   const panel = make("div", "panel fx quote");
   const left = make("div");
@@ -1400,6 +1426,13 @@ function whenVisible(el, fn, threshold) {
   if (dc) {
     const open = make("a", "q-btn ghost mag rip", "Open Discord");
     open.href = dc.url; open.target = "_blank"; open.rel = "noopener noreferrer";
+    if (dc.icon) {
+      const ic = new Image();
+      ic.className = "ico"; ic.alt = "";
+      ic.onerror = () => ic.remove();
+      ic.src = dc.icon;
+      open.insertBefore(ic, open.firstChild);
+    }
     actions.appendChild(open);
   }
   right.appendChild(make("div", "q-label", "Estimated price"));
@@ -1455,10 +1488,12 @@ function whenVisible(el, fn, threshold) {
 
   panel.appendChild(left);
   panel.appendChild(right);
-  $("quoteWrap").appendChild(panel);
+  target.appendChild(panel);
   render();
-  reveal(panel, 0, { clean: true });
-})();
+  if (!(opts && opts.reveal === false)) reveal(panel, 0, { clean: true });
+  return panel;
+}
+buildQuote($("quoteWrap"));
 
 /* ---------- one style page ---------- */
 function panel(title) {
@@ -1524,6 +1559,10 @@ function showStyle(st) {
     p.appendChild(make("p", "soon", "Work for this style is coming soon. Check back later!"));
     box.appendChild(p);
   }
+
+  const qw = make("div", "qwrap");                    // the order + price estimator for this style
+  qw.appendChild(make("h2", "q-title", "Order your edit"));
+  if (buildQuote(qw, st.title.replace(/\s*editing style\s*$/i, ""), { reveal: false })) box.appendChild(qw);
 
   const order = panel("Want an edit like this?");
   order.classList.add("order");
