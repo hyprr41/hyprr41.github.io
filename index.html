@@ -1775,8 +1775,8 @@ const FAQ = [
   p.onerror = () => $("navPfp").appendChild(make("span", "nb-fb", CONFIG.name.charAt(0).toUpperCase()));
   p.src = CONFIG.pfp;
   $("navCta").href = DISCORD_URL;
-  [{ n: "Home", h: "#", k: "" }, { n: "Styles", h: "#styles", k: "styles" },
-   { n: "Discord", h: DISCORD_URL, ext: 1 }, { n: "Store", h: "#store", k: "store" }].forEach((l) => {
+  [{ n: "Home", h: "#", k: "" }, { n: "Styles", h: "#styles", k: "styles" }, { n: "FAQ", h: "#faq", k: "faq" },
+   { n: "Store", h: "#store", k: "store" }, { n: "Discord", h: DISCORD_URL, ext: 1 }].forEach((l) => {
     const a = make("a", "", l.n); a.href = l.h;
     if (l.k !== undefined) a.dataset.k = l.k;
     if (l.ext) { a.target = "_blank"; a.rel = "noopener noreferrer"; }
@@ -1792,12 +1792,17 @@ const FAQ = [
     lastY = y;
   }, { passive: true });
 
-  /* FAQ */
-  if (FAQ.length && $("orderBlock")) {
-    const sec = make("section", "block"); sec.id = "faqBlock";
-    const h = make("h2", "", "FAQ"), list = make("div", "faq");
-    FAQ.forEach((f) => {
-      const item = make("div", "fq"), b = make("button"); b.type = "button";
+  /* FAQ page */
+  const fp = make("div"); fp.id = "faqPage"; fp.hidden = true;
+  fp.innerHTML = '<section class="st-hero"><h1 class="st-title"><span class="t1 rise" style="--d:0">FAQ</span></h1>' +
+    '<p class="st-sub rise" style="--d:200">Quick answers before you order.</p></section>' +
+    '<main class="stage"><div class="faq" id="faqList"></div></main>';
+  document.querySelector(".top").appendChild(fp);
+  (function () {
+    const list = fp.querySelector("#faqList");
+    FAQ.forEach((f, i) => {
+      const item = make("div", "fq rise"), b = make("button"); b.type = "button";
+      item.style.setProperty("--d", 350 + i * 90);
       b.setAttribute("aria-expanded", "false");
       b.appendChild(make("span", "", f.q)); b.appendChild(make("span", "pl"));
       const a = make("div", "fa"), inner = make("div"); inner.appendChild(make("p", "", f.a)); a.appendChild(inner);
@@ -1808,10 +1813,7 @@ const FAQ = [
       });
       item.appendChild(b); item.appendChild(a); list.appendChild(item);
     });
-    sec.appendChild(h); sec.appendChild(list);
-    $("orderBlock").before(sec);
-    reveal(h, 0); reveal(list, 80);
-  }
+  })();
 
   /* styles page */
   const sp2 = make("div"); sp2.id = "stylesPage"; sp2.hidden = true;
@@ -1879,25 +1881,159 @@ const FAQ = [
   /* routing */
   function nav() {
     const id = decodeURIComponent(location.hash.replace(/^#\/?/, ""));
-    const isStore = id === "store", isStyles = id === "styles";
+    const isStore = id === "store", isStyles = id === "styles", isFaq = id === "faq";
     const isStylePage = CONFIG.styles.some((s) => s.id === id);
-    sp.hidden = !isStore; sp2.hidden = !isStyles;
-    if (isStore || isStyles) {
+    sp.hidden = !isStore; sp2.hidden = !isStyles; fp.hidden = !isFaq;
+    if (isStore || isStyles || isFaq) {
       stopRecent();
       $("panels").innerHTML = "";
       $("home").hidden = true; $("stylePage").hidden = true;
-      document.title = (isStore ? "Store" : "Editing styles") + " | " + CONFIG.name;
+      document.title = (isStore ? "Store" : isFaq ? "FAQ" : "Editing styles") + " | " + CONFIG.name;
       if (isStyles) buildStyles();
       window.scrollTo({ top: 0, behavior: "instant" });
     }
-    const key = isStore ? "store" : (isStyles || isStylePage) ? "styles" : "";
+    const key = isStore ? "store" : isFaq ? "faq" : (isStyles || isStylePage) ? "styles" : "";
     document.querySelectorAll("#navLinks a[data-k]").forEach((a) => a.classList.toggle("on", a.dataset.k === key));
     navEl.classList.remove("hide");
   }
   window.addEventListener("hashchange", nav);
   nav();
 })();
-</script>
-<script src="extras.js"></script>
-</body>
-</html>
+
+
+/* ===== PRICE ESTIMATOR: ONE STEP AT A TIME ===== */
+(function () {
+  const Q = CONFIG.quote;
+  if (!Q || !Q.points || !Q.points.length || typeof buildQuote !== "function") return;
+  const fullQuote = buildQuote;
+  const styles = Q.styles && Q.styles.length ? Q.styles : ["Roblox"];
+  const MIN = Q.minMinutes || 1, MAX = Q.maxMinutes || 22;
+  const pts = Q.points.slice().sort((a, b) => a.min - b.min);
+  const lengths = []; for (let m = MIN; m <= MAX; m++) lengths.push(m);
+  function priceFor(m) {
+    if (m <= pts[0].min) return pts[0].price;
+    for (let i = 1; i < pts.length; i++) if (m <= pts[i].min) {
+      const a = pts[i - 1], b = pts[i];
+      return Math.round(a.price + (b.price - a.price) * (m - a.min) / (b.min - a.min));
+    }
+    return pts[pts.length - 1].price;
+  }
+
+  const st = document.createElement("style");
+  st.textContent = `
+  .wz{max-width:640px;margin:0 auto;min-height:360px;display:flex;flex-direction:column}
+  .wz.wz-full{max-width:none;min-height:0;background:none;border:0;box-shadow:none;padding:0}
+  .wz-dots{display:flex;justify-content:center;gap:8px;margin-bottom:24px}
+  .wz-dots i{width:38px;height:5px;border-radius:5px;background:rgba(255,255,255,.12);transition:background .4s ease,box-shadow .4s ease}
+  .wz-dots i.on{background:var(--accent);box-shadow:0 0 12px var(--glow)}
+  .wz-step{flex:1;display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center;animation:wzIn .55s var(--ease) both}
+  .wz-step.back{animation-name:wzBack}
+  @keyframes wzIn{from{opacity:0;transform:translate3d(36px,0,0)}}
+  @keyframes wzBack{from{opacity:0;transform:translate3d(-36px,0,0)}}
+  .wz-step h3{font:600 1.55rem "Chakra Petch",sans-serif}
+  .wz-step small{color:var(--mute);font-size:.95rem}
+  .wz .opts,.wz .mins{justify-content:center}
+  .wz .q-input{max-width:380px;text-align:center}
+  .wz-nav{display:flex;gap:10px;margin-top:auto;padding-top:14px;width:100%;justify-content:center}
+  .wz-nav .q-btn{flex:0 1 190px}
+  .wz-nav .q-btn:disabled{opacity:.35;pointer-events:none}
+  .wz-price{font:700 5.4rem/1 "Chakra Petch",sans-serif;color:#fff;text-shadow:0 0 44px rgba(77,141,255,.65)}
+  .wz-hint{color:#8fd0ff}
+  .wz-again{display:block;width:190px;margin:16px auto 0}`;
+  document.head.appendChild(st);
+
+  function wizard(target, preset, opts) {
+    let style = null, mins = null, deadline = "", dirBack = false, anim = 0;
+    if (preset) style = styles.find((x) => x.toLowerCase() === String(preset).toLowerCase()) || styles[styles.length - 1];
+    const first = style ? 2 : 1;
+    let step = first;
+    const panel = make("div", "panel fx wz");
+    target.appendChild(panel);
+
+    function go(n) { dirBack = n < step; step = n; draw(); }
+    function choices(values, cur, cls, pick) {
+      const g = make("div", cls), btns = [];
+      values.forEach((v) => {
+        const b = make("button", "opt" + (v === cur ? " on" : ""), String(v)); b.type = "button";
+        b.addEventListener("click", () => { btns.forEach((x) => x.classList.remove("on")); b.classList.add("on"); pick(v); });
+        g.appendChild(b); btns.push(b);
+      });
+      return g;
+    }
+    function nav(back, label, onNext, canNext) {
+      const n = make("div", "wz-nav");
+      if (back) { const b = make("button", "q-btn ghost mag rip", "Back"); b.type = "button"; b.addEventListener("click", back); n.appendChild(b); }
+      const nb = make("button", "q-btn mag rip", label); nb.type = "button"; nb.disabled = !canNext;
+      nb.addEventListener("click", onNext); n.appendChild(nb);
+      return { el: n, next: nb };
+    }
+
+    function draw() {
+      cancelAnimationFrame(anim);
+      panel.innerHTML = "";
+      panel.classList.toggle("wz-full", step === 5);
+      if (step < 5) {
+        const dots = make("div", "wz-dots");
+        for (let i = 1; i <= 4; i++) dots.appendChild(make("i", i <= step ? "on" : ""));
+        panel.appendChild(dots);
+      }
+      if (step === 5) {
+        const holder = make("div"); panel.appendChild(holder);
+        const full = fullQuote(holder, style, { reveal: false });
+        const press = (sel, label) => { const b = [...full.querySelectorAll(sel)].find((x) => x.textContent === String(label)); if (b) b.click(); };
+        press(".opts .opt", style); press(".mins .opt", mins);
+        const di = full.querySelector(".q-input");
+        if (di && deadline) { di.value = deadline; di.dispatchEvent(new Event("input")); }
+        const again = make("button", "q-btn ghost mag rip wz-again", "Start over"); again.type = "button";
+        again.addEventListener("click", () => { mins = null; deadline = ""; if (!preset) style = null; go(first); });
+        panel.appendChild(again);
+        return;
+      }
+      const s = make("div", "wz-step" + (dirBack ? " back" : "")); panel.appendChild(s);
+
+      if (step === 1) {
+        const n = nav(null, "Next", () => go(2), !!style);
+        s.appendChild(make("h3", "", "What style do you want?"));
+        s.appendChild(choices(styles, style, "opts", (v) => { style = v; n.next.disabled = false; }));
+        s.appendChild(n.el);
+      } else if (step === 2) {
+        const n = nav(preset ? null : () => go(1), "Next", () => go(3), mins !== null);
+        s.appendChild(make("h3", "", "How long is the video?"));
+        s.appendChild(make("small", "", "Pick the length in minutes"));
+        s.appendChild(choices(lengths, mins, "mins", (v) => { mins = v; n.next.disabled = false; }));
+        s.appendChild(n.el);
+      } else if (step === 3) {
+        s.appendChild(make("h3", "", "When do you need it?"));
+        s.appendChild(make("small", "", "Optional, you can skip this"));
+        const inp = make("input", "q-input"); inp.type = "text"; inp.maxLength = 60;
+        inp.placeholder = "e.g. this Friday"; inp.value = deadline; inp.setAttribute("aria-label", "Deadline");
+        inp.addEventListener("input", () => { deadline = inp.value; });
+        inp.addEventListener("keydown", (e) => { if (e.key === "Enter") go(4); });
+        s.appendChild(inp);
+        s.appendChild(nav(() => go(2), "See my price", () => go(4), true).el);
+      } else if (step === 4) {
+        const target$ = priceFor(mins);
+        s.appendChild(make("small", "", "Estimated price"));
+        const pr = make("div", "wz-price", "$0"); s.appendChild(pr);
+        s.appendChild(make("div", "q-sub", style + " \u00B7 " + mins + (mins === 1 ? " minute (Short)" : " minute video")));
+        const rb = Q.robux;
+        if (rb && mins >= rb.from && mins <= rb.to) s.appendChild(make("div", "wz-hint", rb.text));
+        s.appendChild(make("small", "", Q.note || "This is an estimate. The final price is confirmed in DMs."));
+        s.appendChild(nav(() => go(3), "Next", () => go(5), true).el);
+        const t0 = performance.now(), dur = FX ? 900 : 1;
+        (function tick(t) {
+          const p = Math.min((t - t0) / dur, 1);
+          pr.textContent = "$" + Math.round(target$ * (1 - Math.pow(1 - p, 3)));
+          if (p < 1) anim = requestAnimationFrame(tick);
+        })(t0);
+      }
+    }
+    draw();
+    if (!(opts && opts.reveal === false)) reveal(panel, 0, { clean: true });
+    return panel;
+  }
+
+  buildQuote = wizard;                       // the style pages use this too
+  const qw = $("quoteWrap");
+  if (qw) { qw.innerHTML = ""; wizard(qw); }
+})();
