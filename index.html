@@ -1030,17 +1030,29 @@ function statsRow() {
   const avg = rated.length ? rated.reduce((a, r) => a + r.stars, 0) / rated.length : null;
   const items = (CONFIG.stats || []).filter((s) => !(s.rating && avg === null));
   if (!items.length) return null;
-  const row = h("div", { class: "stats" }, items.map((s, i) => {
+
+  // Build the row before registering its visibility callback. The previous
+  // version referenced `row` from inside its own initializer, causing a
+  // "Cannot access 'row' before initialization" error and stopping the page.
+  const row = h("div", { class: "stats" });
+  const counters = [];
+
+  items.forEach((s, i) => {
     const val = h("b", { text: s.text || "0" });
     const el = h("div", { class: "stat" }, val, h("span", { text: s.label }));
+
     if (!s.text) {
-      const to = s.rating ? avg : s.to, dec = s.rating ? 1 : 0;
+      const to = s.rating ? avg : Number(s.to) || 0;
+      const dec = s.rating ? 1 : 0;
       const fmt = (v) => (s.prefix || "") + v.toFixed(dec) + (s.suffix || "");
       val.textContent = fmt(0);
-      onceVisible(row, () => countTo(val, 0, to, 1300, fmt), 0.4);
+      counters.push(() => countTo(val, 0, to, 1300, fmt));
     }
-    return reveal(el, i * 90);
-  }));
+
+    row.appendChild(reveal(el, i * 90));
+  });
+
+  if (counters.length) onceVisible(row, () => counters.forEach((start) => start()), 0.4);
   return row;
 }
 
