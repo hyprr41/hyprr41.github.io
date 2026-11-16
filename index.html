@@ -445,7 +445,8 @@ footer { position: relative; z-index: 1; text-align: center; padding: 24px 24px 
 /* =====================================================================
    STATS, PROCESS, CTA, BACK-TO-TOP, FOOTER
    ===================================================================== */
-.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; max-width: 960px; margin: 6px auto 0; padding: 0 20px; }
+.stats { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; max-width: 960px; margin: 6px auto 0; padding: 0 20px; }
+.stats .stat { flex: 0 1 220px; }
 .stat { padding: 22px 12px; text-align: center; border-radius: var(--r-md); background: var(--panel); border: 1px solid var(--line); }
 .stat b { display: block; font: 700 2.3rem/1.1 var(--display); color: #fff; text-shadow: 0 0 24px rgba(77,141,255,.4); }
 .stat span { color: var(--mute); font-size: .88rem; font-weight: 600; }
@@ -577,7 +578,6 @@ const CONFIG = {
   stats: [
     { to: 4,  suffix: "+", label: "Years editing" },
     { rating: true,        label: "Average rating" },
-    { text: "$ / Robux",    label: "Payment accepted" }
   ],
 
   steps: [
