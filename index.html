@@ -533,7 +533,7 @@ footer { position: relative; z-index: 1; text-align: center; padding: 24px 24px 
    ===================================================================== */
 
 const PRICES = [
-  { name: "Shorts",    price: "$5",     note: "Fully edited Short (0\u201360 seconds)" },
+  { name: "Shorts",    price: "$5-45",  note: "Fully edited Short (0\u201360 seconds)" },
   { name: "Long form", price: "$15-45", note: "Fully edited long-form video (8\u201322 minutes)" },
   { name: "Robux",     price: "$2.5k",  note: "Fully edited long-form video (8-10 mins)", badge: "$12 discount!" }
 ];
@@ -574,43 +574,17 @@ const CONFIG = {
   ],
   reviewSpeed: 40,
 
-  /* The numbers row under the intro. "rating: true" works out the average from your reviews.
-     Use "to" for a counting number, or "text" for plain text. */
   stats: [
     { to: 4,  suffix: "+", label: "Years editing" },
     { rating: true,        label: "Average rating" },
-    { to: 5,  prefix: "$", label: "Shorts from" },
     { text: "$ / Robux",    label: "Payment accepted" }
   ],
 
-  /* "How it works" steps */
   steps: [
-    { title: "DM me", text: "Pick a style, use the price estimator on its page, then copy your order message and send it to me on Discord." },
+    { title: "DM me", text: "Pick a style you like, then send me a message on Discord with what you need." },
     { title: "Send your footage", text: "Share your raw clips, music and any notes or examples of the style you like." },
     { title: "Get your edit", text: "I deliver fast and take your feedback until you're happy with it." }
   ],
-
-  quote: {
-    styles: ["Roblox", "Gorilla Tag", "Minecraft", "Other"],
-    minMinutes: 1,
-    maxMinutes: 22,
-    points: [
-      { min: 1,  price: 5 },
-      { min: 8,  price: 15 },
-      { min: 15, price: 30 },
-      { min: 22, price: 45 }
-    ],
-    /* Robux prices, drawn the same way as the dollar points. Change these to your real rates.
-       (2.5k for 8-10 min and 700 for a Short come from your site and reviews; the rest are estimates.) */
-    robuxPoints: [
-      { min: 1,  price: 700 },
-      { min: 8,  price: 2500 },
-      { min: 10, price: 2500 },
-      { min: 15, price: 5000 },
-      { min: 22, price: 7500 }
-    ],
-    note: "This is an estimate. I confirm the final price with you in DMs."
-  },
 
   styles: [
     { id: "gtag", title: "Gorilla Tag editing style", image: "gtag.jpg", blurb: "Coming soon.", showreel: null, works: [], prices: [] },
@@ -643,12 +617,12 @@ const STORE = [
 
 const FAQ = [
   { q: "What do you edit?", a: "YouTube videos, Shorts, TikToks and more. My main style is Roblox, and I also do Gorilla Tag and Minecraft." },
-  { q: "How much does an edit cost?", a: "Shorts start at $5 and long form is $15-45 depending on length. Open any editing style and use the price estimator there for a quick quote, in dollars or Robux." },
+  { q: "How much does an edit cost?", a: "Open any editing style and check the Prices section on its page." },
   { q: "How long does an edit take?", a: "It depends on the length, but I work fast. Tell me your deadline when you order and I'll confirm if I can make it." },
   { q: "Do you do revisions?", a: "Yes. I take on your feedback until you're happy with the edit." },
   { q: "How do I pay?", a: "Dollars or Robux. We sort out the payment in Discord DMs before I start." },
   { q: "What do I need to send you?", a: "Your raw footage, any music or sounds you want, and examples or notes on the style you like." },
-  { q: "How do I order?", a: "Join my Discord, DM me " + CONFIG.discord + ", or use the Copy order message button in the estimator." }
+  { q: "How do I order?", a: "Join my Discord and DM me " + CONFIG.discord + " with the style, length and deadline you want." }
 ];
 
 /* =====================================================================
