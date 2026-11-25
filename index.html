@@ -38,7 +38,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; }
 html { background: var(--bg); scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
 body {
-  min-height: 100vh; padding-top: 76px;
+  min-height: 100vh;
   background: var(--bg); color: var(--text);
   font-family: var(--body); line-height: 1.6;
   overflow-x: hidden; -webkit-font-smoothing: antialiased;
@@ -488,7 +488,6 @@ footer { position: relative; z-index: 1; text-align: center; padding: 24px 24px 
   </div>
 </div>
 
-<nav class="nav" id="nav" aria-label="Main"></nav>
 <div id="app"></div>
 <footer id="foot"></footer>
 
@@ -540,12 +539,6 @@ const CONFIG = {
   stats: [
     { to: 4,  suffix: "+", label: "Years editing" },
     { rating: true,        label: "Average rating" },
-  ],
-
-  steps: [
-    { title: "Reach out", text: "Pick a style you like, then get in touch with what you need." },
-    { title: "Send your footage", text: "Share your raw clips, music and any notes or examples of the style you like." },
-    { title: "Get your edit", text: "I deliver fast and take your feedback until you're happy with it." }
   ],
 
   styles: [
@@ -1001,13 +994,6 @@ function statsRow() {
   return row;
 }
 
-function processSection() {
-  const list = CONFIG.steps || [];
-  if (!list.length) return null;
-  return section("How it works", h("div", { class: "steps" }, list.map((s, i) =>
-    reveal(h("div", { class: "step fx tilt" }, h("div", { class: "n", text: String(i + 1) }), h("h3", { text: s.title }), h("p", { text: s.text })), i * 110))));
-}
-
 function ctaBanner() {
   return reveal(h("section", { class: "cta" }, h("div", { class: "cta-in" },
     h("h2", { text: isOpen ? "Ready for a better edit?" : "Commissions are closed right now" }),
@@ -1029,18 +1015,9 @@ function homeView() {
   pfp.onload = () => $("#pfpBox", hero).appendChild(pfp);
   pfp.onerror = () => $("#pfpBox", hero).appendChild(h("div", { class: "pfp-fallback", text: CONFIG.name.charAt(0).toUpperCase() }));
 
-  /* recent work */
-  let recent = (CONFIG.recentWork || []).filter((w) => videoId(w.url));
-  if (!recent.length) CONFIG.styles.forEach((st) => {
-    const tag = st.title.replace(/\s*editing style\s*$/i, "");
-    (st.showreel ? [st.showreel] : []).concat(st.works || []).forEach((w) => { if (videoId(w.url)) recent.push({ url: w.url, title: w.title, tag }); });
-  });
-
   return [hero, h("main", {},
     statsRow(),
     h("div", { class: "wrap" }, section("Choose an editing style", styleGrid())),
-    recent.length ? section("Recent work", reveal(h("div", {}, videoStrip(recent, CONFIG.recentSpeed)), 80)) : null,
-    processSection(),
     reviewsSection(),
     ctaBanner())];
 }
@@ -1129,51 +1106,26 @@ function styleView(st) {
 }
 
 /* =====================================================================
-   NAV + ROUTER
+   ROUTER
    ===================================================================== */
-const nav = $("#nav");
-(function buildNav() {
-  const pfp = h("span", {});
-  const img = h("img", { alt: "", src: CONFIG.pfp });
-  img.onload = () => pfp.appendChild(img);
-  img.onerror = () => pfp.appendChild(h("span", { class: "nb-fb", text: CONFIG.name.charAt(0).toUpperCase() }));
-  nav.append(
-    h("a", { class: "nav-brand", href: "#" }, pfp, h("b", { text: CONFIG.name + " Editing" })),
-    h("div", { class: "nav-links" }, [
-      { n: "Home", h: "#", k: "" }, { n: "Styles", h: "#styles", k: "styles" }
-    ].map((l) => h("a", { href: l.h, "data-k": l.k, text: l.n }))));
-
-  let lastY = scrollY;
-  addEventListener("scroll", () => {
-    const y = scrollY;
-    if (y <= 80 || y < lastY - 2) nav.classList.remove("hide");
-    else if (y > lastY + 2) nav.classList.add("hide");
-    lastY = y;
-  }, { passive: true });
-})();
-
 const app = $("#app");
 function route(first) {
   const id = decodeURIComponent(location.hash.replace(/^#\/?/, ""));
   const st = CONFIG.styles.find((s) => s.id === id);
-  let view, title, key = "";
-  if (id === "styles") { view = stylesView; title = "Editing styles"; key = "styles"; }
-  else if (st) { view = () => styleView(st); title = st.title; key = "styles"; }
+  let view, title;
+  if (id === "styles") { view = stylesView; title = "Editing styles"; }
+  else if (st) { view = () => styleView(st); title = st.title; }
   else { view = homeView; title = CONFIG.name + " | " + CONFIG.tagline; }
 
   const swap = () => {
     app.replaceChildren(...[].concat(view()).filter(Boolean));
     document.title = (st || id === "styles") ? title + " | " + CONFIG.name : title;
     scrollTo({ top: 0, behavior: "instant" });
-    nav.classList.remove("hide");
-    nav.querySelectorAll("a[data-k]").forEach((a) => a.classList.toggle("on", a.dataset.k === key));
   };
   if (!first && FX && document.startViewTransition) document.startViewTransition(swap); else swap();
 }
 addEventListener("hashchange", () => route(false));
 $("#foot").append(
-  h("div", { class: "foot-links" },
-    [["Home", "#"], ["Styles", "#styles"]].map(([n, href]) => h("a", { href, text: n }))),
   h("div", { text: "\u00A9 " + new Date().getFullYear() + " " + CONFIG.name }));
 
 /* back to top */
