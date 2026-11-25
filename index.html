@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -119,12 +118,6 @@ a { color: inherit; }
 }
 .nav-links a:hover, .nav-links a.on { color: #fff; }
 .nav-links a.on::after, .nav-links a:hover::after { transform: scaleX(1); }
-.nav-cta {
-  display: inline-flex; align-items: center; padding: 10px 20px; border-radius: 12px; white-space: nowrap;
-  background: var(--accent2); color: #fff; text-decoration: none; font-weight: 700; font-size: .92rem;
-  transition: background .2s ease, box-shadow .2s ease;
-}
-.nav-cta:hover { background: var(--accent); box-shadow: 0 6px 20px var(--glow); }
 
 /* =====================================================================
    SHARED PIECES
@@ -406,50 +399,13 @@ footer { position: relative; z-index: 1; text-align: center; padding: 24px 24px 
 .q-actions .q-btn { flex: 1 1 170px; }
 
 /* =====================================================================
-   STORE + FAQ
+   STYLES HERO
    ===================================================================== */
 .st-hero { text-align: center; padding: 40px 20px 10px; }
 .st-title { font-family: "Archivo Black", "Arial Black", Impact, sans-serif; color: #d9d6f7; text-transform: uppercase; letter-spacing: -.045em; line-height: .9; text-shadow: 0 6px 30px rgba(120,110,255,.28), 0 2px 0 rgba(255,255,255,.12); }
 .st-title .t1 { display: block; font-size: clamp(3rem, 11vw, 6.4rem); }
 .st-title .t2 { display: block; font-size: clamp(4.4rem, 17vw, 10.2rem); margin-top: -.02em; }
 .st-sub { margin-top: 26px; color: #9b98b8; font-size: 1.02rem; }
-.st-wrap { max-width: 1016px; margin: 0 auto; padding: 44px 20px 80px; }
-.st-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 24px; }
-.st-card { position: relative; overflow: hidden; width: min(440px, 100%); display: flex; flex-direction: column; gap: 16px; padding: 30px; border-radius: 24px; background: rgba(17,18,30,.92); border: 1px solid rgba(255,255,255,.08); transition: border-color .3s ease, transform .35s var(--ease), box-shadow .35s ease; }
-.st-card:hover { border-color: rgba(130,120,255,.55); transform: translateY(-5px); box-shadow: 0 22px 48px rgba(0,0,0,.5), 0 0 34px rgba(110,100,255,.2); }
-.st-card::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(110deg, transparent 38%, rgba(160,150,255,.13) 50%, transparent 62%); transform: translateX(-130%); animation: stSweep 5.5s ease-in-out infinite; }
-@keyframes stSweep { 0%, 55% { transform: translateX(-130%); } 100% { transform: translateX(130%); } }
-.st-ico { display: flex; }
-.st-ico img { width: 80px; height: 80px; border-radius: 22px; object-fit: cover; border: 3px solid #11121e; box-shadow: 0 10px 26px rgba(0,0,0,.5); animation: floaty 5s ease-in-out infinite; }
-.st-ico img + img { margin-left: -20px; }
-.st-card h3 { font: 600 1.75rem/1.15 var(--body); white-space: pre-line; }
-.st-desc { color: #8e8ba8; }
-.st-inc { list-style: none; padding: 0; display: grid; gap: 10px; }
-.st-inc li { display: flex; align-items: center; gap: 10px; color: #cdcaf0; font-size: .97rem; }
-.st-inc li::before { content: "\2713"; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: rgba(91,91,222,.28); color: #b4b4ff; font-size: .72rem; flex: none; }
-.st-price { font: 400 3rem/1 "Archivo Black", "Arial Black", sans-serif; color: #fff; letter-spacing: -.02em; margin-top: 4px; }
-.st-price small { font-size: .5em; }
-.st-buy { display: block; text-align: center; padding: 15px 18px; border-radius: 12px; background: #5b5bde; color: #fff; text-decoration: none; font-weight: 600; box-shadow: inset 0 1px 0 rgba(255,255,255,.18); transition: background .2s ease, box-shadow .2s ease, transform .2s ease; }
-.st-buy:hover { background: #6c6cf0; box-shadow: 0 8px 26px rgba(91,91,222,.5); transform: translateY(-1px); }
-.st-buy.closed, .st-buy.closed:hover { background: #3a3b4d; color: #8a8aa0; box-shadow: none; transform: none; cursor: not-allowed; pointer-events: none; }
-.st-card.is-closed .st-price, .st-card.is-closed .st-ico img { opacity: .55; }
-.st-note { margin-top: 22px; text-align: center; color: #7b7897; font-size: .85rem; }
-.faq { max-width: 760px; margin: 0 auto; padding: 0 20px; display: grid; gap: 12px; }
-.fq { border-radius: var(--r-md); background: var(--panel); border: 1px solid var(--line); overflow: hidden; transition: border-color .3s ease, box-shadow .3s ease; }
-.fq:hover, .fq.open { border-color: var(--accent); }
-.fq.open { box-shadow: 0 0 24px rgba(77,141,255,.16); }
-.fq button { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 18px 20px; background: none; border: 0; font-weight: 600; font-size: 1rem; text-align: left; cursor: pointer; }
-.pl { position: relative; flex: none; width: 26px; height: 26px; border-radius: 50%; background: rgba(77,141,255,.16); transition: rotate .4s var(--spring), background .3s ease; }
-.pl::before, .pl::after { content: ""; position: absolute; left: 50%; top: 50%; width: 10px; height: 2px; margin: -1px 0 0 -5px; background: var(--accent); border-radius: 2px; }
-.pl::after { rotate: 90deg; transition: rotate .4s ease; }
-.fq.open .pl { rotate: 180deg; background: var(--accent2); }
-.fq.open .pl::before, .fq.open .pl::after { background: #fff; }
-.fq.open .pl::after { rotate: 0deg; }
-.fa { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .45s var(--ease); }
-.fq.open .fa { grid-template-rows: 1fr; }
-.fa > div { overflow: hidden; }
-.fa p { padding: 0 20px 20px; color: var(--mute); opacity: 0; translate: 0 -6px; transition: opacity .4s ease .1s, translate .4s ease .1s; }
-.fq.open .fa p { opacity: 1; translate: 0 0; }
 
 /* =====================================================================
    STATS, PROCESS, CTA, BACK-TO-TOP, FOOTER
@@ -500,7 +456,7 @@ footer { position: relative; z-index: 1; text-align: center; padding: 24px 24px 
 
 .lite .orb, .lite .cursor-glow, .lite .progress { display: none; }
 .lite .rise, .lite .ch, .lite .pfp, .lite .pfp-fallback, .lite .badge::after, .lite .avatar, .lite .dot::after,
-.lite .tagline, .lite .st-card::after, .lite .st-ico img, .lite .rstars svg.on, .lite .wz-step { animation: none; }
+.lite .tagline, .lite .rstars svg.on, .lite .wz-step { animation: none; }
 .lite .reveal { opacity: 1; translate: none; }
 .calm .logos, .calm .orb { animation: none; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
@@ -513,7 +469,6 @@ footer { position: relative; z-index: 1; text-align: center; padding: 24px 24px 
   .nav-brand b { display: none; }
   .nav-links a { padding: 8px 9px; font-size: .88rem; }
   .nav-links a::after { left: 9px; right: 9px; }
-  .nav-cta { padding: 9px 14px; }
 }
 @media (max-width: 640px) {
   .grid { grid-template-columns: 1fr; }
@@ -552,12 +507,10 @@ const CONFIG = {
   name: "hypr",
   tagline: "Video Editor",
   bio: "YouTube videos, Shorts, TikToks and more.\nI've been editing for 4+ years, creating clean, smooth and engaging edits in any style.\nTake a look at my recent work below!",
-  discord: "hypr.7",
   pfp: "pfp.png",
   commissions: "open",                       // "open" = green dot, "closed" = red dot
 
   socials: [
-    { name: "Discord", url: "https://discord.gg/efUch4nwY2", icon: "discord.png" },
     { name: "guns.lol", url: "https://guns.lol/hyprr8" }
   ],
 
@@ -590,7 +543,7 @@ const CONFIG = {
   ],
 
   steps: [
-    { title: "DM me", text: "Pick a style you like, then send me a message on Discord with what you need." },
+    { title: "Reach out", text: "Pick a style you like, then get in touch with what you need." },
     { title: "Send your footage", text: "Share your raw clips, music and any notes or examples of the style you like." },
     { title: "Get your edit", text: "I deliver fast and take your feedback until you're happy with it." }
   ],
@@ -613,26 +566,6 @@ const CONFIG = {
     { id: "style4", title: "Editing style 4", image: "", blurb: "Coming soon.", showreel: null, works: [], prices: [] }
   ]
 };
-
-const STORE = [
-  {
-    name: "Presets + SFX\npack", price: "$10", images: ["presets.png", "sfx.png"],
-    desc: "Everything in one pack to level up your edits.",
-    includes: ["Presets and more: 25+ assets", "25+ sound effects"],
-    closed: true,                            // false = open sales
-    link: ""                                 // Gumroad/Payhip link. Empty = Buy now goes to Discord
-  }
-];
-
-const FAQ = [
-  { q: "What do you edit?", a: "YouTube videos, Shorts, TikToks and more. My main style is Roblox, and I also do Gorilla Tag and Minecraft." },
-  { q: "How much does an edit cost?", a: "Open any editing style and check the Prices section on its page." },
-  { q: "How long does an edit take?", a: "It depends on the length, but I work fast. Tell me your deadline when you order and I'll confirm if I can make it." },
-  { q: "Do you do revisions?", a: "Yes. I take on your feedback until you're happy with the edit." },
-  { q: "How do I pay?", a: "Dollars or Robux. We sort out the payment in Discord DMs before I start." },
-  { q: "What do I need to send you?", a: "Your raw footage, any music or sounds you want, and examples or notes on the style you like." },
-  { q: "How do I order?", a: "Join my Discord and DM me " + CONFIG.discord + " with the style, length and deadline you want." }
-];
 
 /* =====================================================================
    ENGINE
@@ -662,7 +595,6 @@ const HOVER = matchMedia("(hover: hover) and (pointer: fine)").matches;
 document.documentElement.classList.toggle("lite", !FX);
 if (reduceMotion) document.documentElement.classList.add("calm");
 
-const DISCORD_URL = ((CONFIG.socials || []).find((s) => /discord/i.test(s.name)) || {}).url || "#";
 const isOpen = CONFIG.commissions !== "closed";
 const STAR = '<svg viewBox="0 0 24 24"><polygon points="12,2 15.1,8.6 22,9.3 16.8,14 18.2,21 12,17.5 5.8,21 7.2,14 2,9.3 8.9,8.6"/></svg>';
 
@@ -1024,15 +956,15 @@ function quote(preset) {
       const copy = h("button", { class: "q-btn mag rip", type: "button", text: "Copy order message" });
       copy.addEventListener("click", async () => {
         const ok = await copyText(message());
-        flash(copy, ok ? "Copied! Paste it in Discord" : "Couldn't copy, select the text", "Copy order message", 2400);
+        flash(copy, ok ? "Copied!" : "Couldn't copy, select the text", "Copy order message", 2400);
       });
       box.append(
         pay, h("small", { text: "Estimated price" }), price,
         h("div", { class: "wz-sub", text: s.style + " \u00B7 " + s.mins + (s.mins === 1 ? " minute (Short)" : " minute video") }),
         hasR && h("div", { class: "wz-hint", text: isR ? "About $" + priceFor(s.mins) + " in dollars" : "or " + fmtR(robuxFor(s.mins)) + " Robux" }),
-        h("small", { text: Q.note || "This is an estimate. The final price is confirmed in DMs." }),
+        h("small", { text: Q.note || "This is an estimate. The final price is confirmed before starting." }),
         h("pre", { class: "q-msg", text: message() }),
-        h("div", { class: "q-actions" }, copy, DISCORD_URL !== "#" && h("a", { class: "q-btn ghost mag rip", href: DISCORD_URL, target: "_blank", rel: "noopener noreferrer", text: "Open Discord" })),
+        h("div", { class: "q-actions" }, copy),
         h("div", { class: "wz-nav" },
           h("button", { class: "q-btn ghost mag rip", type: "button", text: "Back", onclick: () => go(3) }),
           h("button", { class: "q-btn ghost mag rip", type: "button", text: "Start over", onclick: () => { s.mins = null; s.deadline = ""; if (!preset) s.style = null; go(first); } })));
@@ -1079,7 +1011,7 @@ function processSection() {
 function ctaBanner() {
   return reveal(h("section", { class: "cta" }, h("div", { class: "cta-in" },
     h("h2", { text: isOpen ? "Ready for a better edit?" : "Commissions are closed right now" }),
-    h("p", { text: isOpen ? "DM me " + CONFIG.discord + " on Discord and let's get your next video moving." : "Join my Discord to hear when they open again." }),
+    h("p", { text: isOpen ? "Reach out below and let's get your next video moving." : "Check back soon to see when commissions open again." }),
     h("div", { class: "socials" }, socialButtons(true)))));
 }
 
@@ -1091,12 +1023,7 @@ function homeView() {
     h("p", { class: "tagline rise", style: "--d:450", text: CONFIG.tagline }),
     h("p", { class: "bio rise", style: "--d:560" }, String(CONFIG.bio).split("\n").filter((l) => l.trim()).map((l) => h("span", { class: "bl", text: l.trim() }))),
     h("div", { class: "status rise", style: "--d:660" }, h("span", { class: "dot" + (isOpen ? "" : " off") }), isOpen ? "Commissions open" : "Commissions closed"),
-    (() => {
-      const b = h("button", { class: "copy mag rip", type: "button", text: "Copy" });
-      b.addEventListener("click", async () => { const ok = await copyText(CONFIG.discord); flash(b, ok ? "Copied" : "Copy failed", "Copy", 1600); });
-      return h("div", { class: "contact rise", style: "--d:760" }, h("span", {}, isOpen ? "DM for commissions: " : "Contact: ", h("b", { text: CONFIG.discord })), b);
-    })(),
-    h("div", { class: "socials rise", style: "--d:860" }, socialButtons(false))));
+    h("div", { class: "socials rise", style: "--d:760" }, socialButtons(false))));
 
   const pfp = h("img", { class: "pfp", alt: CONFIG.name + " profile picture", src: CONFIG.pfp });
   pfp.onload = () => $("#pfpBox", hero).appendChild(pfp);
@@ -1177,7 +1104,7 @@ function styleView(st) {
   if (q) panels.push(h("div", {}, h("h2", { class: "q-title", text: "Order your edit" }), q));
 
   panels.push(h("section", { class: "panel fx order" }, h("h2", { text: "Want an edit like this?" }),
-    h("p", { class: "sub", text: "DM me " + CONFIG.discord + " on Discord, or reach me here:" }), h("div", { class: "socials" }, socialButtons(true))));
+    h("p", { class: "sub", text: "Reach out to get started:" }), h("div", { class: "socials" }, socialButtons(true))));
   const all = CONFIG.styles.slice().sort((a, b) => !!b.featured - !!a.featured);
   if (all.length > 1) {
     const i = all.indexOf(st), prev = all[(i - 1 + all.length) % all.length], next = all[(i + 1) % all.length];
@@ -1201,54 +1128,6 @@ function styleView(st) {
   ];
 }
 
-function faqView() {
-  const list = h("div", { class: "faq" });
-  FAQ.forEach((f, i) => {
-    const item = h("div", { class: "fq rise", style: "--d:" + (300 + i * 80) });
-    const btn = h("button", { type: "button", "aria-expanded": "false" }, h("span", { text: f.q }), h("span", { class: "pl" }));
-    btn.addEventListener("click", () => {
-      const open = !item.classList.contains("open");
-      list.querySelectorAll(".fq.open").forEach((x) => { x.classList.remove("open"); $("button", x).setAttribute("aria-expanded", "false"); });
-      if (open) { item.classList.add("open"); btn.setAttribute("aria-expanded", "true"); }
-    });
-    item.append(btn, h("div", { class: "fa" }, h("div", {}, h("p", { text: f.a }))));
-    list.appendChild(item);
-  });
-  return [
-    h("section", { class: "st-hero" }, h("h1", { class: "st-title" }, h("span", { class: "t1 rise", text: "FAQ" })),
-      h("p", { class: "st-sub rise", style: "--d:200", text: "Quick answers before you order." })),
-    h("main", { class: "stage" }, list)
-  ];
-}
-
-function storeView() {
-  const allClosed = STORE.every((s) => s.closed);
-  const grid = h("div", { class: "st-grid" });
-  STORE.forEach((it, n) => {
-    const flat = it.name.replace(/\n/g, " ");
-    const parts = String(it.price).split(".");
-    let buy;
-    if (it.closed) buy = h("span", { class: "st-buy closed", role: "button", "aria-disabled": "true", text: "Closed" });
-    else {
-      buy = h("a", { class: "st-buy", href: it.link || DISCORD_URL, target: "_blank", rel: "noopener noreferrer", text: "Buy now" });
-      if (!it.link) buy.addEventListener("click", async () => {
-        if (await copyText("Hi " + CONFIG.name + "! I'd like to buy the " + flat + " (" + it.price + ").")) flash(buy, "Copied! Paste it in Discord", "Buy now", 2400);
-      });
-    }
-    grid.appendChild(h("div", { class: "st-card rise" + (it.closed ? " is-closed" : ""), style: "--d:" + (350 + n * 150) },
-      h("div", { class: "st-ico" }, (it.images || [it.image]).map((src, k) => h("img", { alt: "", src, style: "animation-delay:" + k * 0.7 + "s" }))),
-      h("h3", { text: it.name }), it.desc && h("p", { class: "st-desc", text: it.desc }),
-      it.includes && it.includes.length && h("ul", { class: "st-inc" }, it.includes.map((t) => h("li", { text: t }))),
-      h("div", { class: "st-price" }, parts[0], parts[1] && h("small", { text: "." + parts[1] })), buy));
-  });
-  return [
-    h("section", { class: "st-hero" }, h("h1", { class: "st-title" }, h("span", { class: "t1 rise", text: "Editing" }), h("span", { class: "t2 rise", style: "--d:140", text: "Store" })),
-      h("p", { class: "st-sub rise", style: "--d:300", text: "Products designed to improve your editing." })),
-    h("div", { class: "st-wrap" }, grid, h("p", { class: "st-note rise", style: "--d:700",
-      text: allClosed ? "The store is closed right now. Join my Discord to hear when it opens." : "Buying through Discord: click Buy now, paste the message, and I'll send it over." }))
-  ];
-}
-
 /* =====================================================================
    NAV + ROUTER
    ===================================================================== */
@@ -1261,10 +1140,8 @@ const nav = $("#nav");
   nav.append(
     h("a", { class: "nav-brand", href: "#" }, pfp, h("b", { text: CONFIG.name + " Editing" })),
     h("div", { class: "nav-links" }, [
-      { n: "Home", h: "#", k: "" }, { n: "Styles", h: "#styles", k: "styles" }, { n: "FAQ", h: "#faq", k: "faq" },
-      { n: "Store", h: "#store", k: "store" }, { n: "Discord", h: DISCORD_URL, ext: true }
-    ].map((l) => h("a", { href: l.h, "data-k": l.k, target: l.ext ? "_blank" : null, rel: l.ext ? "noopener noreferrer" : null, text: l.n }))),
-    h("a", { class: "nav-cta", href: DISCORD_URL, target: "_blank", rel: "noopener noreferrer", text: "Join Discord" }));
+      { n: "Home", h: "#", k: "" }, { n: "Styles", h: "#styles", k: "styles" }
+    ].map((l) => h("a", { href: l.h, "data-k": l.k, text: l.n }))));
 
   let lastY = scrollY;
   addEventListener("scroll", () => {
@@ -1280,15 +1157,13 @@ function route(first) {
   const id = decodeURIComponent(location.hash.replace(/^#\/?/, ""));
   const st = CONFIG.styles.find((s) => s.id === id);
   let view, title, key = "";
-  if (id === "store") { view = storeView; title = "Store"; key = "store"; }
-  else if (id === "faq") { view = faqView; title = "FAQ"; key = "faq"; }
-  else if (id === "styles") { view = stylesView; title = "Editing styles"; key = "styles"; }
+  if (id === "styles") { view = stylesView; title = "Editing styles"; key = "styles"; }
   else if (st) { view = () => styleView(st); title = st.title; key = "styles"; }
   else { view = homeView; title = CONFIG.name + " | " + CONFIG.tagline; }
 
   const swap = () => {
     app.replaceChildren(...[].concat(view()).filter(Boolean));
-    document.title = st || id ? title + " | " + CONFIG.name : title;
+    document.title = (st || id === "styles") ? title + " | " + CONFIG.name : title;
     scrollTo({ top: 0, behavior: "instant" });
     nav.classList.remove("hide");
     nav.querySelectorAll("a[data-k]").forEach((a) => a.classList.toggle("on", a.dataset.k === key));
@@ -1298,8 +1173,7 @@ function route(first) {
 addEventListener("hashchange", () => route(false));
 $("#foot").append(
   h("div", { class: "foot-links" },
-    [["Home", "#"], ["Styles", "#styles"], ["FAQ", "#faq"], ["Store", "#store"]].map(([n, href]) => h("a", { href, text: n })),
-    h("a", { href: DISCORD_URL, target: "_blank", rel: "noopener noreferrer", text: "Discord" })),
+    [["Home", "#"], ["Styles", "#styles"]].map(([n, href]) => h("a", { href, text: n }))),
   h("div", { text: "\u00A9 " + new Date().getFullYear() + " " + CONFIG.name }));
 
 /* back to top */
@@ -1383,41 +1257,5 @@ route(true);
 })();
 </script>
 <script src="sfx.js"></script>
-   <style>
-.totop{bottom:86px}
-.dc-fab{position:fixed;right:18px;bottom:18px;z-index:66;display:flex;align-items:center;gap:10px;padding:6px;border-radius:999px;background:rgba(10,16,34,.88);border:1px solid var(--line);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:0 12px 34px rgba(0,0,0,.5);opacity:0;translate:0 24px;animation:dcIn .8s var(--ease) 1.2s forwards;transition:box-shadow .3s ease,border-color .3s ease}
-.dc-fab:hover{border-color:#5865f2;box-shadow:0 14px 40px rgba(0,0,0,.55),0 0 30px rgba(88,101,242,.4)}
-@keyframes dcIn{to{opacity:1;translate:0 0}}
-.dc-logo{position:relative;isolation:isolate;flex:none;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:#5865f2;color:#fff;box-shadow:0 0 22px rgba(88,101,242,.55);transition:transform .45s var(--spring)}
-.dc-logo:hover{transform:rotate(-10deg) scale(1.08)}
-.dc-logo::after{content:"";position:absolute;inset:0;border-radius:50%;background:#5865f2;z-index:-1;animation:dcPing 2.6s var(--ease) infinite}
-@keyframes dcPing{from{transform:scale(1);opacity:.55}to{transform:scale(1.8);opacity:0}}
-.dc-logo svg{width:26px;height:26px;fill:currentColor}
-.dc-fab .dc-join{display:inline-flex;align-items:center;padding:12px 24px;margin:0 2px 0 0;border-radius:999px;border:0;background:#5865f2;color:#fff;font:700 .95rem var(--body);text-decoration:none;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.2);transition:background .2s ease,box-shadow .2s ease,transform .3s var(--spring)}
-.dc-fab .dc-join:hover{background:#6b78ff;box-shadow:0 8px 22px rgba(88,101,242,.55);transform:translateY(-2px)}
-.lite .dc-fab,.lite .dc-logo::after{animation:none;opacity:1;translate:none}
-@media(max-width:560px){.dc-fab{right:12px;bottom:12px}.totop{bottom:78px;right:12px}.dc-fab .dc-join{padding:11px 18px}}
-<style>
-.totop{bottom:86px}
-.dc-fab{position:fixed;right:18px;bottom:18px;z-index:66;display:flex;align-items:center;gap:10px;padding:6px;border-radius:999px;background:rgba(10,16,34,.88);border:1px solid var(--line);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:0 12px 34px rgba(0,0,0,.5);opacity:0;translate:0 24px;animation:dcIn .8s var(--ease) 1.2s forwards;transition:box-shadow .3s ease,border-color .3s ease}
-.dc-fab:hover{border-color:#5865f2;box-shadow:0 14px 40px rgba(0,0,0,.55),0 0 30px rgba(88,101,242,.4)}
-@keyframes dcIn{to{opacity:1;translate:0 0}}
-.dc-logo{position:relative;isolation:isolate;flex:none;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:#5865f2;color:#fff;box-shadow:0 0 22px rgba(88,101,242,.55);transition:transform .45s var(--spring)}
-.dc-logo:hover{transform:rotate(-10deg) scale(1.08)}
-.dc-logo::after{content:"";position:absolute;inset:0;border-radius:50%;background:#5865f2;z-index:-1;animation:dcPing 2.6s var(--ease) infinite}
-@keyframes dcPing{from{transform:scale(1);opacity:.55}to{transform:scale(1.8);opacity:0}}
-.dc-logo svg{width:26px;height:26px;fill:currentColor}
-.dc-fab .dc-join{display:inline-flex;align-items:center;padding:12px 22px;margin:0 2px 0 0;border-radius:999px;border:0;background:#5865f2;color:#fff;font:700 .95rem var(--body);white-space:nowrap;text-decoration:none;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.2);transition:background .2s ease,box-shadow .2s ease,transform .3s var(--spring)}
-.dc-fab .dc-join:hover{background:#6b78ff;box-shadow:0 8px 22px rgba(88,101,242,.55);transform:translateY(-2px)}
-.lite .dc-fab,.lite .dc-logo::after{animation:none;opacity:1;translate:none}
-@media(max-width:560px){.dc-fab{right:12px;bottom:12px}.totop{bottom:78px;right:12px}.dc-fab .dc-join{padding:11px 16px;font-size:.88rem}}
-</style>
-
-<div class="dc-fab">
-  <a class="dc-logo" href="https://discord.gg/cEFCF4YsFp" target="_blank" rel="noopener noreferrer" aria-label="Discord">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189z"/></svg>
-  </a>
-  <a class="dc-join chip rip" href="https://discord.gg/cEFCF4YsFp" target="_blank" rel="noopener noreferrer">Want a discount?</a>
-</div>
 </body>
 </html>
